@@ -1,0 +1,22 @@
+2026/04/16-12:50:14.570 6f90 Reusing MANIFEST E:\MyProject\CVReviwer\user_data\Default\Local Storage\leveldb/MANIFEST-000001
+2026/04/16-12:50:14.578 6f90 Recovering log #26
+2026/04/16-12:50:14.680 6f90 Level-0 table #29: started
+2026/04/16-12:50:14.787 6f90 Level-0 table #29: 14017 bytes OK
+2026/04/16-12:50:14.788 6f90 Recovering log #28
+2026/04/16-12:50:14.789 6f90 Reusing old log E:\MyProject\CVReviwer\user_data\Default\Local Storage\leveldb/000028.log 
+2026/04/16-12:50:14.861 6f90 Delete type=0 #26
+2026/04/16-12:51:14.998 6f90 Level-0 table #31: started
+2026/04/16-12:51:15.024 6f90 Level-0 table #31: 14606 bytes OK
+2026/04/16-12:51:15.047 6f90 Delete type=0 #28
+2026/04/16-12:51:15.048 6f90 Compacting 4@0 + 1@1 files
+2026/04/16-12:51:15.066 6f90 Generated table #32@0: 11 keys, 15061 bytes
+2026/04/16-12:51:15.066 6f90 Compacted 4@0 + 1@1 files => 15061 bytes
+2026/04/16-12:51:15.097 6f90 compacted to: files[ 0 1 0 0 0 0 0 ]
+2026/04/16-12:51:15.098 6f90 Delete type=2 #23
+2026/04/16-12:51:15.098 6f90 Delete type=2 #25
+2026/04/16-12:51:15.098 6f90 Delete type=2 #27
+2026/04/16-12:51:15.098 6f90 Delete type=2 #29
+2026/04/16-12:51:15.098 6f90 Delete type=2 #31
+2026/04/16-12:52:19.604 6f90 Level-0 table #34: started
+2026/04/16-12:52:19.635 6f90 Level-0 table #34: 14823 bytes OK
+2026/04/16-12:52:19.658 6f90 Delete type=0 #30
