@@ -1,0 +1,27 @@
+# CVision — Python dependencies
+#
+#   pip install -r requirements.txt
+
+
+# Web interface — both the user panel and the admin panel
+streamlit
+
+# MySQL driver used by db.py (Features 1 and 2)
+mysql-connector-python
+
+# CV upload and PDF handling (Feature 3)
+pikepdf
+PyPDF2
+
+# AI extraction and job enrichment
+openai
+python-dotenv
+
+# Job enrichment pipeline: embeddings and its progress bar
+sentence-transformers
+tqdm
+
+# HTTP calls to the job provider (Feature 1's scraper runs)
+requests
+
+torchvision

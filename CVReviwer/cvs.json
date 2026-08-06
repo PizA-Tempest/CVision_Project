@@ -1,0 +1,1489 @@
+[
+  {
+    "id": "7c9eb37de86543f0a04abf8390d0fb4c",
+    "original_filename": "test.pdf",
+    "stored_path": "uploads\\7c9eb37de86543f0a04abf8390d0fb4c_test.pdf",
+    "size_bytes": 428,
+    "sha256": "6a2c9202371559d9a83ac8c24d5118c70881e78d2b4b8266c038971c06ca479c",
+    "uploaded_at": "2026-06-28T18:21:29.313087+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "026298a9fe7341e9b4f826bdb90043c7",
+    "original_filename": "ข้อมูลส่วนบุคคลและประวัติรับราชการ.pdf.pdf",
+    "stored_path": "uploads\\026298a9fe7341e9b4f826bdb90043c7_ข_อม_ลส_วนบ_คคลและประว_ต_ร_บราชการ.pdf.pdf",
+    "size_bytes": 369741,
+    "sha256": "6314081bc097d6e5a8a2a984ee4f89f93cd01a330ac3bc8bacf423ad28020ee5",
+    "uploaded_at": "2026-06-28T18:22:34.502831+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "2f814c68a48b42e6ba53aa70ca04e3c5",
+    "original_filename": "CVision_SRS.pdf",
+    "stored_path": "uploads\\2f814c68a48b42e6ba53aa70ca04e3c5_CVision_SRS.pdf",
+    "size_bytes": 4651757,
+    "sha256": "a5eae4e197735c2046f5b4eedb255706186f7171918cec1020528e0e699b6b1c",
+    "uploaded_at": "2026-06-28T18:28:04.354173+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "3c2b9111cf92417e8b5cf5a4825d38d7",
+    "original_filename": "สำเนาของ สำเนาของ CVision_Software_Requirement_Specifications_v1.3.pdf",
+    "stored_path": "uploads\\3c2b9111cf92417e8b5cf5a4825d38d7_สำเนาของ สำเนาของ CVision_Software_Requirement_Specifications_v1.3.pdf",
+    "size_bytes": 3737583,
+    "sha256": "7bf96f894f95082bf45302874e7bb02ff4f58d1dd2aa42a454e4ea8de7bb9697",
+    "uploaded_at": "2026-06-29T07:34:45.152126+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "976b08d02fc74a4f861a7b221dbf15e4",
+    "original_filename": "frontend_CV_nutchajunthong.pdf",
+    "stored_path": "uploads\\976b08d02fc74a4f861a7b221dbf15e4_frontend_CV_nutchajunthong.pdf",
+    "size_bytes": 38921,
+    "sha256": "50379b22130c3702235ceabd1d92140e0f4e7a9ce309e759926c295e12b74462",
+    "uploaded_at": "2026-07-03T12:12:56.128473+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "b0447605ead945e2b1a5f4f50c7bf487",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\b0447605ead945e2b1a5f4f50c7bf487_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-07-03T12:56:44.324986+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "ec3d94664fa046eda5adeb2cfd7b82f1",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\ec3d94664fa046eda5adeb2cfd7b82f1_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-07-03T17:40:27.113213+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "841cf37fdc26451ebfa7c9b267e51a28",
+    "original_filename": "CVSRS.pdf",
+    "stored_path": "uploads\\841cf37fdc26451ebfa7c9b267e51a28_CVSRS.pdf",
+    "size_bytes": 1102050,
+    "sha256": "40cf327aa71ec465d8fb55ce978243a6d339519bc2bddf2e23711bd504b95188",
+    "uploaded_at": "2026-07-03T19:19:42.628616+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "dd0cdfb0510846bda2380647a3e7eaa2",
+    "original_filename": "mpdf.pdf",
+    "stored_path": "uploads\\dd0cdfb0510846bda2380647a3e7eaa2_mpdf.pdf",
+    "size_bytes": 152819,
+    "sha256": "d13a5319c9646a54b83fc91c5382cc73448aed8279da86eaf3f79809184d9460",
+    "uploaded_at": "2026-07-03T19:20:20.321846+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "cb5dd341ec2f4c76aebe37597084e263",
+    "original_filename": "_E0_B8_A5_E0_B8_B8_E0_B8_87_E0_B8_99_E0_B8_B4_E0_B8_95_20(6).pdf",
+    "stored_path": "uploads\\cb5dd341ec2f4c76aebe37597084e263__E0_B8_A5_E0_B8_B8_E0_B8_87_E0_B8_99_E0_B8_B4_E0_B8_95_20_6_.pdf",
+    "size_bytes": 235110,
+    "sha256": "8d30d5f0bedc53e037b2eec30ab9d042d0fff2c1bb7cf50436451ed547c67f09",
+    "uploaded_at": "2026-07-03T19:20:51.500315+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "6125a5de1f594cf4bd57d02aa7cb455c",
+    "original_filename": "test.pdf",
+    "stored_path": "uploads\\6125a5de1f594cf4bd57d02aa7cb455c_test.pdf",
+    "size_bytes": 151423,
+    "sha256": "bbd870ad17bd318d8def07ba120171ac1c7ddf67b7adf59c76cb8110f4f44e41",
+    "uploaded_at": "2026-07-09T05:45:50.621062+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "45d7f16b27be41309dca92cd10c58a37",
+    "original_filename": "large_cv.pdf",
+    "stored_path": "uploads\\45d7f16b27be41309dca92cd10c58a37_large_cv.pdf",
+    "size_bytes": 3446,
+    "sha256": "86a9d826514845a2d545b2a415e7f8450eda967c49a34182440756de88d69547",
+    "uploaded_at": "2026-07-09T06:30:39.560619+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "e0b10eed37c543658baf6c843715038b",
+    "original_filename": "CVision_Software_Requirement_Specifications_v1.3 (1).pdf",
+    "stored_path": "uploads\\e0b10eed37c543658baf6c843715038b_CVision_Software_Requirement_Specifications_v1.3 _1_.pdf",
+    "size_bytes": 1134926,
+    "sha256": "04c01db981d6f1e79fffdcd0c90c74f230013165dc36c3e620582d7c052d036d",
+    "uploaded_at": "2026-07-09T06:31:01.850194+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "725a2958990a40d4acb97cf282ffe24f",
+    "original_filename": "valid_cv.pdf",
+    "stored_path": "uploads\\725a2958990a40d4acb97cf282ffe24f_valid_cv.pdf",
+    "size_bytes": 1352,
+    "sha256": "ebc7946cedab34795c2a5308eb5ab54924dfc755767b39c14ecced66eca8a91f",
+    "uploaded_at": "2026-07-09T06:45:30.857709+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "a57f03ba299743d99fc1f841926cee75",
+    "original_filename": "John Michael Doe.pdf",
+    "stored_path": "uploads\\a57f03ba299743d99fc1f841926cee75_John Michael Doe.pdf",
+    "size_bytes": 19429,
+    "sha256": "33c56e660c12587898e8120f40460741c4d4107fad91617e8839ea290369c058",
+    "uploaded_at": "2026-07-09T06:51:11.853965+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "9809562be69a4231b209bc7b4db0fdcb",
+    "original_filename": "srs_046_test_cv.pdf",
+    "stored_path": "uploads\\9809562be69a4231b209bc7b4db0fdcb_srs_046_test_cv.pdf",
+    "size_bytes": 903,
+    "sha256": "380981e0655b91ff9521629e4b7aadc515e687a437896ffb02ab2a6ae9bb0446",
+    "uploaded_at": "2026-07-09T06:59:11.249251+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "ede3d05b1bb14ddba1a4b6443543a49f",
+    "jobseekerId": "John Doe",
+    "original_filename": "026298a9fe7341e9b4f826bdb90043c7_ข_อม_ลส_วนบ_คคลและประว_ต_ร_บราชการ.pdf.pdf",
+    "stored_path": "uploads\\ede3d05b1bb14ddba1a4b6443543a49f_026298a9fe7341e9b4f826bdb90043c7_ข_อม_ลส_วนบ_คคลและประว_ต_ร_บราชการ.pdf.pdf",
+    "size_bytes": 369741,
+    "sha256": "6314081bc097d6e5a8a2a984ee4f89f93cd01a330ac3bc8bacf423ad28020ee5",
+    "uploaded_at": "2026-08-01T16:00:14.519453+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Electrical Engineering",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Southern Technology College",
+          "degree": "Vocational Certificate in Electrical Engineering",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "Songkhla Technology College",
+          "degree": "Higher Vocational Certificate in Electrical Engineering",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "Sukhothai Thammathirat Open University",
+          "degree": "Bachelor of Public Administration",
+          "start_year": null,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Songkhla Central Prison",
+          "position": "Correctional Officer",
+          "start_date": "2003-05-16",
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-01T16:00:18.379759+00:00"
+    }
+  },
+  {
+    "id": "918a5fedf2b44eb691267fa796ed02b5",
+    "jobseekerId": "John Doe",
+    "original_filename": "ec3d94664fa046eda5adeb2cfd7b82f1_MyCV.pdf",
+    "stored_path": "uploads\\918a5fedf2b44eb691267fa796ed02b5_ec3d94664fa046eda5adeb2cfd7b82f1_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-08-01T16:03:58.562707+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Software Engineering",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023",
+          "end_date": "2024"
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024",
+          "end_date": "2025"
+        }
+      ],
+      "extracted_at": "2026-08-01T16:04:03.814086+00:00"
+    }
+  },
+  {
+    "id": "38e9ec3b415a41beb60af77ce81a1734",
+    "jobseekerId": "John Doe",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\38e9ec3b415a41beb60af77ce81a1734_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-08-02T04:06:56.236301+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Rai",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023-2024",
+          "end_date": null
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024-2025",
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T04:07:03.518205+00:00"
+    }
+  },
+  {
+    "id": "bef36ec760bc4feeb549d5bfdb631763",
+    "jobseekerId": "John Doe",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\bef36ec760bc4feeb549d5bfdb631763_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-08-02T04:17:09.331600+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Rai",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023-2024",
+          "end_date": null
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024-2025",
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T04:17:16.103097+00:00"
+    }
+  },
+  {
+    "id": "9f7dff48e4454dba8f6adad514fe1e10",
+    "jobseekerId": "John Doe",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\9f7dff48e4454dba8f6adad514fe1e10_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-08-02T07:31:33.734084+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Rai",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023",
+          "end_date": "2024"
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024",
+          "end_date": "2025"
+        }
+      ],
+      "extracted_at": "2026-08-02T07:31:39.508177+00:00"
+    }
+  },
+  {
+    "id": "af988576311c4fc19e7df33135bcded0",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\af988576311c4fc19e7df33135bcded0_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-02T08:56:39.504900+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science in Computer Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T08:56:43.319808+00:00"
+    }
+  },
+  {
+    "id": "69f0405ecefa4ebdb8d19cc455d2cfdc",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\69f0405ecefa4ebdb8d19cc455d2cfdc_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-02T15:09:13.167261+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T15:09:18.185289+00:00"
+    }
+  },
+  {
+    "id": "ec68039dddb54abda5138383e7cb9171",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\ec68039dddb54abda5138383e7cb9171_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-02T15:11:40.853692+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T15:11:43.528720+00:00"
+    }
+  },
+  {
+    "id": "e389fbafab284975ac3c7ca774eca14b",
+    "jobseekerId": "John Doe",
+    "original_filename": "Khomkit_Resume.pdf",
+    "stored_path": "uploads\\e389fbafab284975ac3c7ca774eca14b_Khomkit_Resume.pdf",
+    "size_bytes": 112143,
+    "sha256": "36dacfcf4cddf393abf4e2c6aa721eebd75b21f5e3776b3ce0f03180be94e7ca",
+    "uploaded_at": "2026-08-02T15:12:34.610516+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Docker",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "GitHub",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Next.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prisma",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Krainai Wittayakom Rajamangala Phisek School",
+          "degree": "Science–Mathematics Program",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering (Software Engineering)",
+          "start_year": 2018,
+          "end_year": 2023
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-08-02T15:12:38.044795+00:00"
+    }
+  },
+  {
+    "id": "62bf92e27dea4c1e86b5c8c82f2c6e32",
+    "jobseekerId": "John Doe",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\62bf92e27dea4c1e86b5c8c82f2c6e32_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-08-02T15:13:27.370128+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Rai",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023-2024",
+          "end_date": null
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024-2025",
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T15:13:32.412613+00:00"
+    }
+  },
+  {
+    "id": "46c4938837cc4e13a6f7ed4adc599f08",
+    "jobseekerId": "John Doe",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\46c4938837cc4e13a6f7ed4adc599f08_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-08-02T15:16:05.281912+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Rai",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023",
+          "end_date": "2024"
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024",
+          "end_date": "2025"
+        }
+      ],
+      "extracted_at": "2026-08-02T15:16:10.061086+00:00"
+    }
+  },
+  {
+    "id": "49568c8b5e8c4d7493cb67d84c97b07b",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\49568c8b5e8c4d7493cb67d84c97b07b_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-02T15:18:01.339016+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science in Computer Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T15:18:05.505205+00:00"
+    }
+  },
+  {
+    "id": "71da57791d3545a089936631faeb55cc",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\71da57791d3545a089936631faeb55cc_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-02T15:18:39.988891+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T15:18:43.216153+00:00"
+    }
+  },
+  {
+    "id": "f30d3c4f6bb1417fa8a04c5d2b58b1b6",
+    "jobseekerId": "John Doe",
+    "original_filename": "Khomkit_Resume.pdf",
+    "stored_path": "uploads\\f30d3c4f6bb1417fa8a04c5d2b58b1b6_Khomkit_Resume.pdf",
+    "size_bytes": 112143,
+    "sha256": "36dacfcf4cddf393abf4e2c6aa721eebd75b21f5e3776b3ce0f03180be94e7ca",
+    "uploaded_at": "2026-08-02T15:22:31.600370+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Docker",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "GitHub",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Next.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prisma",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Krainai Wittayakom Rajamangala Phisek School",
+          "degree": "Science–Mathematics Program",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering (Software Engineering)",
+          "start_year": 2018,
+          "end_year": 2023
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-08-02T15:22:36.022857+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.735,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.75,
+      "suggestions": [
+        "Add proficiency levels for each skill to enhance completeness.",
+        "Include specific start and end years for the education section to improve clarity.",
+        "Consider adding a work experience section to provide a more comprehensive view of your background."
+      ],
+      "analyzedAt": "2026-08-02T17:34:43.611975+00:00"
+    }
+  },
+  {
+    "id": "bfaee7930ed64eafb1a4d1cccec4662b",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\bfaee7930ed64eafb1a4d1cccec4662b_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-02T17:34:51.093499+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-02T17:34:54.200639+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.705,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Add proficiency levels to skills to enhance completeness.",
+        "Provide specific dates for work experience to improve clarity.",
+        "Use action verbs and detailed descriptions in work experience entries to enhance clarity."
+      ],
+      "analyzedAt": "2026-08-02T18:07:03.749550+00:00"
+    }
+  },
+  {
+    "id": "eb443ae2817a412e87e3459623d259de",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\eb443ae2817a412e87e3459623d259de_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-06T13:29:43.787425+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-06T13:29:49.778790+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.705,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Provide proficiency levels for each skill to enhance completeness.",
+        "Add specific dates for work experience to improve clarity.",
+        "Improve formatting and readability of the CV to enhance clarity."
+      ],
+      "analyzedAt": "2026-08-06T13:34:07.815555+00:00"
+    }
+  },
+  {
+    "id": "bb6dfb3c2cf149d49c0d4cf85a951269",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\bb6dfb3c2cf149d49c0d4cf85a951269_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-06T18:21:50.954212+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-06T18:21:57.843622+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [
+        "Add proficiency levels to skills to enhance clarity and completeness.",
+        "Provide specific start dates for work experience to improve completeness.",
+        "Improve formatting consistency in work experience descriptions for better clarity."
+      ],
+      "analyzedAt": "2026-08-06T18:22:00.809070+00:00"
+    }
+  }
+]
