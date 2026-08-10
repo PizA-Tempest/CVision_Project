@@ -1,5 +1,6 @@
 .env
 .venv/
+.venv_py310_backup/
 node_modules/
 __pycache__/
 *.pyc
