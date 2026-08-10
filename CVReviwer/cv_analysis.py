@@ -96,6 +96,8 @@ def retrieveCVForAnalysis(cvId: str) -> tuple[AIExtractionResult, str, list[str]
     extracted = record.get("extracted_data")
     if not extracted:
         raise CVDataCorruptedException(f"No extracted data for CV {cvId}")
+    if not isinstance(extracted, dict):
+        raise CVDataCorruptedException(f"Extracted data for CV {cvId} is corrupted")
 
     skills = extracted.get("skills", [])
     education = extracted.get("education", [])
@@ -125,8 +127,8 @@ def retrieveCVForAnalysis(cvId: str) -> tuple[AIExtractionResult, str, list[str]
     if work_experience:
         available.append("work_experience")
 
-    if not available:
-        raise CVDataCorruptedException("CV has no extractable categories for analysis")
+    if not raw_text and skills and education and work_experience:
+        raise CVDataCorruptedException("Raw CV text is unavailable for analysis")
 
     return cv_data, raw_text, available
 
@@ -182,6 +184,46 @@ def requestCVAnalysis(
         raise
     except Exception as e:
         raise AIServiceUnavailableException(f"AI Service unavailable: {str(e)}")
+
+
+def _extract_validated_score(analysisResult: dict[str, Any] | None, field: str, label: str) -> float:
+    if analysisResult is None or not isinstance(analysisResult, dict):
+        raise CVAnalysisException(f"{label} score could not be read: analysis result is missing or malformed")
+    value = analysisResult.get(field)
+    if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise CVAnalysisException(f"{label} score is missing or malformed")
+    if value < 0 or value > 100:
+        raise CVAnalysisException(f"{label} score out of range (0-100): {value}")
+    return value
+
+
+def extractCompletenessScore(analysisResult: dict[str, Any] | None) -> float:
+    return _extract_validated_score(analysisResult, "completeness_score", "completeness")
+
+
+def extractRelevanceScore(analysisResult: dict[str, Any] | None) -> float:
+    return _extract_validated_score(analysisResult, "relevance_score", "relevance")
+
+
+def extractClarityScore(analysisResult: dict[str, Any] | None) -> float:
+    return _extract_validated_score(analysisResult, "clarity_score", "clarity")
+
+
+def extractOverallScore(analysisResult: dict[str, Any] | None) -> float:
+    return _extract_validated_score(analysisResult, "overall_score", "overall")
+
+
+def extractImprovementSuggestions(analysisResult: dict[str, Any] | None) -> list[str]:
+    if analysisResult is None or not isinstance(analysisResult, dict):
+        raise CVAnalysisException("Improvement suggestions could not be read: analysis result is missing or malformed")
+    suggestions = analysisResult.get("suggestions")
+    if suggestions is None:
+        raise CVAnalysisException("Improvement suggestions field is missing")
+    if not isinstance(suggestions, list):
+        raise CVAnalysisException("Improvement suggestions field is malformed")
+    if not all(isinstance(s, str) for s in suggestions):
+        raise CVAnalysisException("Improvement suggestions field contains non-string entries")
+    return suggestions
 
 
 def calculateCompletenessScore(
@@ -331,6 +373,13 @@ def calculateOverallScore(
     clarity: float,
     availableCategories: list[str],
 ) -> float:
+    if not availableCategories:
+        raise CVAnalysisException("No categories available to calculate an overall score")
+    for label, value in (("completeness", completeness), ("relevance", relevance),
+                         ("clarity", clarity)):
+        if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise CVAnalysisException(f"{label} score is not a valid number")
+
     weights = {"completeness": 0.35, "relevance": 0.35, "clarity": 0.30}
     total = 0.0
     weight_sum = 0.0
@@ -386,13 +435,13 @@ def displayCVAnalysis(cvId: str) -> dict[str, Any] | None:
 
 
 def handleAnalysisError(exception: Exception) -> str:
-    error_messages = {
-        "AIServiceUnavailableException": "The CV score could not be generated at this time",
-        "CVDataCorruptedException": "Your CV data could not be read — please re-upload your CV",
-        "CVAnalysisException": "An error occurred while calculating your CV score",
-    }
-    exception_type = type(exception).__name__
-    return error_messages.get(exception_type, "An unexpected error occurred while analyzing your CV")
+    if isinstance(exception, AIServiceUnavailableException):
+        return "The CV score could not be generated at this time"
+    if isinstance(exception, CVDataCorruptedException):
+        return "Your CV data could not be read — please re-upload your CV"
+    if isinstance(exception, CVAnalysisException):
+        return "An error occurred while calculating your CV score"
+    return "An unexpected error occurred while analyzing your CV"
 
 
 def analyzeCV(cvId: str) -> CVAnalysisResult:
