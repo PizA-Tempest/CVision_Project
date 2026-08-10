@@ -472,5 +472,9 @@ def analyzeCV(cvId: str) -> CVAnalysisResult:
             analyzedAt=datetime.now(timezone.utc).isoformat(),
         )
 
+    if (result.completenessScore >= 0.7 and result.relevanceScore >= 0.7
+            and result.clarityScore >= 0.7):
+        result.suggestions = []
+
     storeCVAnalysis(cvId, result)
     return result

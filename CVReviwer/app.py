@@ -73,12 +73,35 @@ import cv_upload
 import embed
 from cv_upload import AIExtractionResult, CVUploadException
 
+# CV analysis & scoring
+import cv_analysis
+from cv_analysis import CVAnalysisResult, analyzeCV, handleAnalysisError
+
 # Feature 2
 import cv_data_adapter
 import match_controller
-from cv_analysis import CVAnalysisResult, analyzeCV, handleAnalysisError
 
 st.set_page_config(page_title="CVision", page_icon="📄", layout="wide")
+
+# A PDF whose text layer yields less than this is treated as unreadable
+# rather than sent to the AI. A one-page CV runs to well over a thousand
+# characters; anything under this is a design export or a scan where the
+# text is pixels, and the AI can only return three empty lists from it.
+MIN_EXTRACTABLE_CHARS = 50
+
+
+class UnreadablePDFException(Exception):
+    """
+    The PDF opened and validated but carries no selectable text.
+
+    Not a Feature 3 exception: M-03-04 validateCVFile checks the file is a
+    readable PDF, which an image-only export genuinely is. The failure only
+    became visible two steps later, as M-03-08 rejecting three empty
+    categories — accurate but useless to the person, who is told nothing was
+    found rather than that their file has no text in it. Raised here so the
+    upload handler can say what actually happened and what to do about it.
+    """
+
 
 # Stand-in until Feature 5 (Authentication) supplies a real identity. Every
 # upload is attributed to this id, and it is what the "My CVs" picker filters
@@ -243,6 +266,17 @@ def process_cv(uploaded_file):
     # M-03-06
     raw_text = cv_upload.extractTextFromCV(cv_file_id)
 
+    # Fail here rather than three steps later. A CV exported flat from a
+    # design tool is one image with no text layer, so everything downstream
+    # runs on an empty string and the person is eventually told "no extracted
+    # information found" — true, but it does not tell them their file is a
+    # picture.
+    if len((raw_text or "").strip()) < MIN_EXTRACTABLE_CHARS:
+        raise UnreadablePDFException(
+            "This PDF has no selectable text — it looks like an image or a "
+            "flattened design export."
+        )
+
     # M-03-11 -> M-03-12 -> M-03-13
     detected = embed.detectSensitiveInfo(raw_text)
     masked = embed.maskSensitiveInfo(raw_text, detected)
@@ -271,6 +305,22 @@ def process_cv(uploaded_file):
 # ---------------------------------------------------------------------
 # Rendering
 # ---------------------------------------------------------------------
+
+def _has_extracted_data(cv_file_id):
+    """
+    Whether M-03-10 can return anything for this CV.
+
+    Feature 3 offers no "was this parsed?" query, and adding one would mean
+    editing an approved file, so this asks the documented method and treats
+    its exception as the answer.
+    """
+    if not cv_file_id:
+        return False
+    try:
+        return bool(embed.displayExtractedCVInfo(cv_file_id))
+    except Exception:
+        return False
+
 
 def render_extracted_info(cv_file_id):
     """Draws what M-03-10 displayExtractedCVInfo returns."""
@@ -316,41 +366,6 @@ def render_extracted_info(cv_file_id):
             )
 
     return skills
-
-
-def render_cv_analysis(cv_file_id):
-    """Draws the CV analysis & scoring panel from cv_analysis."""
-    st.markdown('<hr class="analysis-section-sep">', unsafe_allow_html=True)
-    st.markdown("## 📊 CV Analysis & Scoring")
-    with st.spinner("🤖 Analyzing your CV..."):
-        try:
-            analysis_result: CVAnalysisResult = analyzeCV(cv_file_id)
-            st.success("✅ Analysis complete")
-
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                overall_pct = analysis_result.overallScore * 100
-                st.metric("Overall", f"{overall_pct:.0f}/100")
-            with col2:
-                comp_pct = analysis_result.completenessScore * 100
-                st.metric("Completeness", f"{comp_pct:.0f}/100")
-            with col3:
-                rel_pct = analysis_result.relevanceScore * 100
-                st.metric("Relevance", f"{rel_pct:.0f}/100")
-            with col4:
-                cla_pct = analysis_result.clarityScore * 100
-                st.metric("Clarity", f"{cla_pct:.0f}/100")
-
-            if analysis_result.suggestions:
-                st.markdown("### 💡 Improvement Suggestions")
-                for s in analysis_result.suggestions:
-                    st.markdown(f"- {s}")
-
-        except Exception as e:
-            err_msg = handleAnalysisError(e)
-            st.warning(f"⚠️ {err_msg}")
-
-    st.markdown('<hr class="analysis-section-sep">', unsafe_allow_html=True)
 
 
 def _skill_label(skill):
@@ -441,6 +456,41 @@ def render_matches(cv_file_id):
         st.markdown("")
 
 
+def render_cv_analysis(cv_file_id):
+    """Draws the CV analysis & scoring panel from cv_analysis."""
+    st.markdown('<hr class="analysis-section-sep">', unsafe_allow_html=True)
+    st.markdown("## 📊 CV Analysis & Scoring")
+    with st.spinner("🤖 Analyzing your CV..."):
+        try:
+            analysis_result: CVAnalysisResult = analyzeCV(cv_file_id)
+            st.success("✅ Analysis complete")
+
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                overall_pct = analysis_result.overallScore * 100
+                st.metric("Overall", f"{overall_pct:.0f}/100")
+            with col2:
+                comp_pct = analysis_result.completenessScore * 100
+                st.metric("Completeness", f"{comp_pct:.0f}/100")
+            with col3:
+                rel_pct = analysis_result.relevanceScore * 100
+                st.metric("Relevance", f"{rel_pct:.0f}/100")
+            with col4:
+                cla_pct = analysis_result.clarityScore * 100
+                st.metric("Clarity", f"{cla_pct:.0f}/100")
+
+            if analysis_result.suggestions:
+                st.markdown("### 💡 Improvement Suggestions")
+                for s in analysis_result.suggestions:
+                    st.markdown(f"- {s}")
+
+        except Exception as e:
+            err_msg = handleAnalysisError(e)
+            st.warning(f"⚠️ {err_msg}")
+
+    st.markdown('<hr class="analysis-section-sep">', unsafe_allow_html=True)
+
+
 # ---------------------------------------------------------------------
 # Page
 # ---------------------------------------------------------------------
@@ -457,6 +507,15 @@ if "cv_file_id" not in st.session_state:
 # carries the same stand-in id, so this lists all guest uploads rather than
 # one person's. The table and the query are in place for Feature 5 to inherit.
 previous = cv_data_adapter.list_cv_ids_for(JOBSEEKER_ID)
+
+# Only offer CVs that actually parsed. A failed extraction still leaves a
+# registry row and a jobseeker_cv row behind, because M-03-05 storeCVFile and
+# the ownership write both happen before extraction is attempted. Listing
+# those meant "Use" set cv_file_id directly, bypassing the upload handler's
+# error path, and M-03-10 raised NoExtractionResultException with nothing to
+# catch it.
+previous = [row for row in previous if _has_extracted_data(row.get("cv_id"))]
+
 if previous:
     with st.expander(f"📁 My CVs ({len(previous)})"):
         st.caption(
@@ -487,6 +546,23 @@ if uploaded_file:
             st.session_state["cv_file_id"] = cv_file_id
             st.session_state["masked_fields"] = masked_fields
             st.success(f"✅ Upload successful: {uploaded_file.name}")
+        except UnreadablePDFException:
+            st.error(
+                "❌ We could not read any text from this PDF. It looks like an "
+                "image rather than a text document — CVs exported flat from "
+                "design tools (Canva, Figma, Illustrator) often are."
+            )
+            st.info(
+                "**What to try**\n\n"
+                "- Open the PDF and try selecting text with your cursor. If "
+                "nothing highlights, there is no text layer.\n"
+                "- Re-export from the original editor as a normal PDF rather "
+                "than an image or flattened export.\n"
+                "- Print or export to PDF from Word or Google Docs instead.\n"
+                "- If the original is only available as a scan, run OCR on it "
+                "first."
+            )
+            st.stop()
         except CVUploadException as ex:
             # M-03-03 for upload failures, M-03-15 for protection/AI failures.
             upload_errors = (
@@ -517,7 +593,19 @@ if cv_file_id:
             unsafe_allow_html=True,
         )
 
-    cv_skills = render_extracted_info(cv_file_id)
+    # Backstop. The picker no longer offers unparsed CVs, but a session that
+    # was open across the fix — or a CV deleted from cvs.json — can still hold
+    # an id M-03-10 cannot answer for. Clear it and ask for a fresh upload
+    # rather than letting the exception reach Streamlit as a traceback.
+    try:
+        cv_skills = render_extracted_info(cv_file_id)
+    except Exception:
+        st.session_state["cv_file_id"] = None
+        st.warning(
+            "That CV has no parsed data — it may have failed to read when it "
+            "was uploaded. Please upload it again."
+        )
+        st.stop()
 
     render_cv_analysis(cv_file_id)
 
@@ -525,7 +613,8 @@ if cv_file_id:
     # 2's own entry point rather than reusing what M-03-10 returned for
     # display: the two happen to agree today, but M-02-01 is where SRS-061's
     # "please re-upload your CV" is raised if the stored data is unusable, and
-    # that check belongs before matching starts rather than after.
+    # that check belongs before matching starts rather than after. The return
+    # value is no longer read here — the call is made for that check alone.
     try:
         match_controller.retrieve_cv_data(cv_file_id)
     except Exception as ex:
