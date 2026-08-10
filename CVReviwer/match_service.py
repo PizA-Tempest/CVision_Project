@@ -46,6 +46,113 @@ import cv_data_adapter
 # Renormalised over whatever categories the CV actually has (SRS-058).
 CATEGORY_WEIGHTS = {"skills": 0.50, "work_experience": 0.30, "education": 0.20}
 
+# What a listing scores in a category it states no requirement for.
+#
+# This was 1.0 — full marks for saying nothing. That is not neutral, it is a
+# reward: a listing with no stated qualification outscored one whose stated
+# qualification the CV actually satisfies (level match alone caps at 0.8),
+# so absent data beat matching data. It also lands hardest on the listings
+# least likely to state requirements, which in the sample corpus are the
+# hospitality roles a developer CV should rank last.
+#
+# Neutral is the honest reading: an unstated requirement is unknown, not
+# satisfied. Set per category because the two are not equally uninformative
+# — a job that names no degree usually does not need one, while a job that
+# names no experience level often still wants some.
+#
+# Swept by tools/eval_matching.py; change here once a value is chosen.
+# Measured on the 12-CV corpus: 1.0/1.0 gave a worst margin of -0.440 and a
+# median of -0.257; 0.5/0.5 gave -0.281 and -0.115, with inversions falling
+# from 283 to 195 and no CV made worse. 0.3/0.5 scored a hair better still
+# (193 inversions) but the difference is inside the noise of a 12-CV sample,
+# and 0.5 is the value with a reason behind it rather than a fit to this
+# corpus: an unstated requirement is unknown, and unknown is the midpoint.
+UNSTATED_EDUCATION_RATIO = 0.5
+UNSTATED_EXPERIENCE_RATIO = 0.5
+
+# How much of the skills category comes from semantic similarity rather than
+# token overlap. See cv_embedding.py for why this is needed at all: measured
+# across the corpus, every CV had at least one developer listing scoring
+# exactly 0.000 on token overlap, because the listings share no vocabulary
+# with each other (Golang/microservices vs PHP/Magento vs Swift/Kotlin). No
+# alias map invents an overlap that is not there.
+#
+# Blended into skills rather than added as a fourth category: M-02-06 defines
+# three categories with documented weights, and a fourth would change an
+# approved signature. This asks the same question the skills category already
+# asks — "can this person do this job?" — with a second, non-lexical answer.
+#
+# Left at 0.0 by measurement, not oversight. Swept against SEMANTIC_GATE at
+# every gate/floor pair and dominated at all of them: 0.3/1.0/0.2 gave a worst
+# margin of -0.106 against gate-only's -0.094, and never separated more CVs.
+# Once the gate handles domain relevance, blending a second signal into the
+# skills category only dilutes the token overlap M-02-03 measures. Keeping it
+# at 0.0 leaves that documented method's contribution untouched.
+SEMANTIC_WEIGHT = 0.0
+
+# How much the *whole* score is gated on the listing resembling the CV's
+# field, as a multiplier: (1 - GATE) + GATE * semantic.
+#
+# SEMANTIC_WEIGHT only reaches the skills category, which is half the score.
+# The other half — education 0.20 and experience 0.30 — is domain-blind: a
+# kitchen listing asking for two years gives a two-year developer CV a full
+# 1.0, exactly as a developer listing would. Measured on this corpus, that is
+# where kitchen listings earn most of their score once skills are handled, so
+# blending alone plateaued at 4 of 12 CVs separated.
+#
+# Gating says the obvious thing the category weights cannot: three years of
+# experience counts toward a job in your field, and counts for much less
+# toward one that is not. It multiplies rather than adds so it cannot lift a
+# listing — only hold one back — which keeps the score inside [0, 1] as
+# SRS-052 requires without renormalising anything.
+#
+# 0.8 with SEMANTIC_NORMALIZE on: 5 of 12 CVs separated, median margin
+# -0.034, inversions down from 195 to 136, and — the reason it beat gate 1.0
+# — a mean top score of 0.476 against 0.466, with listings scoring exactly
+# zero down from 2.7 per CV to 0.8.
+#
+# Gate 1.0 is not obviously worse on the ranking metrics and was rejected on
+# the ones that do not appear in them. At 1.0 the furthest listing is
+# multiplied by zero outright, so a CV's weakest candidates disappear rather
+# than rank last, and the count of zero-scored listings triples. 0.8 keeps a
+# fifth of every score intact regardless of domain, which is enough to keep
+# the bottom of the list ordered.
+#
+# Two traps worth naming, both found by measurement:
+#
+#   Raw (unnormalised) gating scored a *better* worst margin at every gate —
+#   -0.105 against -0.274 — while halving the number the person actually
+#   sees: mean top score 0.255 against 0.476. The margin columns cannot see
+#   scale, and a perfectly ranked list whose best match reads 0.04 is not
+#   shippable.
+#
+#   High floors flatten rather than rank. At floor 0.35 with raw gating, the
+#   sweep reported the best median in the table (+0.000) and the fewest
+#   inversions (81) while separating *zero* CVs, because enough listings fell
+#   below the floor that margins tied at zero instead of turning positive.
+SEMANTIC_GATE = 0.8
+
+# Whether the gate uses each listing's similarity relative to the rest of the
+# candidate pool, rather than its raw value.
+#
+# Raw cosines against a CV span roughly 0.10-0.55 and never approach 1.0, so
+# multiplying by one at GATE = 1.0 destroys 70-90% of every score. Measured:
+# adopting raw gating collapsed the whole corpus into 0.00-0.09, with one CV
+# scoring 10 of its 19 listings at exactly zero. The ranking was right and the
+# number was useless — SRS-055 puts that number on the card, and a best match
+# rendering as 0.043 tells the person nothing.
+#
+# Normalising min-max across the listings scored for one CV fixes the scale
+# without giving back the separation: the closest listing keeps its full
+# score, the furthest is suppressed hardest, and everything between is spread
+# across the range instead of squashed near zero. Scores stay comparable
+# within one person's ranking, which is the only place they are ever compared
+# — SRS-055 shows one CV's list, and job_match rows are read back per CV.
+#
+# It also removes the need for a hand-tuned SEMANTIC_FLOOR: min-max floors
+# adaptively at whatever the weakest candidate happens to be.
+SEMANTIC_NORMALIZE = True
+
 SCORE_DECIMAL_PLACES = 3  # job_match.match_score is DECIMAL(4,3)
 
 # Ordered lowest to highest, keyed by the canonical names enrich_jobs.py asks
@@ -165,6 +272,148 @@ def _norm(text) -> str:
     return re.sub(r"\s+", " ",
                   re.sub(r"[^a-z0-9+#.\u0e00-\u0e7f ]+", " ",
                          str(text or "").lower())).strip()
+
+
+# Whether skill names are canonicalised before comparison, and how much a
+# partial (containment) match is worth.
+#
+# M-02-03 compares normalised strings for equality, which misses spellings a
+# human reads as identical. Measured across this corpus, 84 of 156 CV/listing
+# pairs scored exactly zero on skills; canonicalising recovers 23 of them.
+# Real examples from the enrichment output:
+#
+#   listing "Node"      vs CV "Node.js"     — suffix
+#   listing "MY SQL"    vs CV "MySQL"       — whitespace
+#   listing "Vue"       vs CV "Vue.js"      — suffix
+#   listing "React.JS"  vs CV "React"       — suffix and case
+#
+# This was deferred once, on the finding that canonicalising alone left the
+# average *worst* dev listing at 0.000 and so could not separate anything.
+# That reasoning stopped applying once SEMANTIC_GATE suppressed the kitchen
+# listings: the job here is no longer to achieve separation but to lift a
+# developer listing over a kitchen one the gate has already pushed down, and
+# the remaining failures are decided by 0.03-0.12.
+#
+# Adopted on the skill signal, not on the ranking. Canonicalising cut
+# developer listings scoring zero on skills from 83 of 156 to 74, and left
+# separated, worst margin and median *identical* — the listings deciding each
+# failing CV's margin are ones no spelling change touches. It is kept anyway:
+# treating "Node" and "Node.js" as different skills is wrong regardless of
+# whether this corpus rewards fixing it, and the gain will grow with the
+# listing count.
+SKILL_NORMALISE = True
+
+# Credit for a containment match — "restful api" against "rest api", where
+# one canonical name contains the other. Not full credit: containment is
+# weaker evidence than equality and "data structures" contains "data" without
+# meaning it. Half a point says "probably related" without asserting a match.
+#
+# Left at 0.0 by measurement. Swept at 0.25, 0.5 and 0.75: recovered 4 further
+# zeros beyond canonicalisation alone and changed nothing else — same
+# separated count, same worst margin, same median. Fuzzy matching is harder to
+# justify than an alias map, so it does not earn its place on this evidence.
+SKILL_PARTIAL_CREDIT = 0.0
+
+# Minimum length either side must have before containment is considered, so
+# that short tokens do not swallow unrelated names — "go" inside "golang" is
+# fine, "go" inside "mongodb" is not.
+SKILL_PARTIAL_MIN_LEN = 4
+
+# Words that describe a skill without being one. Enrichment produces phrases
+# as often as tokens, especially translating from Thai: "JavaScript
+# programming", "Experience with React", "SQL databases". Stripped before
+# canonicalising so the phrase and the bare name land on the same key.
+_SKILL_NOISE = re.compile(
+    r"\b(experience (with|in|of)|knowledge of|proficiency in|proficient in|"
+    r"familiarity with|skills? in|programming|development|developing|"
+    r"databases?|frameworks?|libraries|technologies|basic|advanced|strong)\b"
+)
+
+# Spellings of the same thing. Keys are already _norm'd — lowercase, with
+# punctuation reduced to spaces — so entries are written in that form.
+#
+# Deliberately hand-written and short rather than generated. Every entry is a
+# variant actually seen in this corpus's enrichment output or CVs; guessing at
+# aliases that have not appeared risks collapsing two genuinely different
+# skills onto one key, which is a harder failure to notice than a miss.
+_SKILL_ALIASES = {
+    "js": "javascript", "java script": "javascript",
+    "node": "nodejs", "node js": "nodejs", "nodejs": "nodejs",
+    "express": "expressjs", "express js": "expressjs",
+    "vue": "vuejs", "vue js": "vuejs",
+    "react js": "react", "reactjs": "react", "react native": "reactnative",
+    "next js": "nextjs", "nextjs": "nextjs",
+    "nest js": "nestjs", "angular js": "angular",
+    "my sql": "mysql", "ms sql": "sqlserver", "mssql": "sqlserver",
+    "sql server": "sqlserver", "postgres": "postgresql",
+    "ts": "typescript", "html 5": "html", "html5": "html",
+    "css 3": "css", "css3": "css",
+    "asp net": "aspnet", "vb net": "vbnet", "net": "dotnet",
+    "net core": "dotnet", "c sharp": "csharp", "c#": "csharp",
+    "golang": "go", "rest": "restapi", "rest api": "restapi",
+    "rest apis": "restapi", "restful api": "restapi",
+    "restful apis": "restapi", "api": "restapi",
+    "github": "git", "gitlab": "git", "version control": "git",
+    "microservice architecture": "microservices",
+    "front end": "frontend", "back end": "backend",
+    "full stack": "fullstack", "ui ux": "uiux", "ux ui": "uiux",
+}
+
+
+def canonical_skill(name) -> str:
+    """
+    A comparison key that survives the spellings enrichment actually produces.
+
+    Strips descriptive noise, applies the alias map, then removes internal
+    spaces and dots so "Node.js", "node js" and "NodeJS" agree. Falls back to
+    the plain normalised name when nothing matches, so an unknown skill still
+    compares exactly as before.
+
+    Parameters:
+        name: str
+
+    Returns:
+        str — empty when the name reduces to nothing.
+    """
+    base = _norm(name)
+    if not base:
+        return ""
+    stripped = re.sub(r"\s+", " ", _SKILL_NOISE.sub(" ", base)).strip() or base
+    for candidate in (stripped, base):
+        if candidate in _SKILL_ALIASES:
+            return _SKILL_ALIASES[candidate]
+        squashed = candidate.replace(" ", "").replace(".", "")
+        if squashed in _SKILL_ALIASES:
+            return _SKILL_ALIASES[squashed]
+    return stripped.replace(" ", "").replace(".", "") or stripped
+
+
+def _skill_key(name) -> str:
+    """The comparison key in force, honouring SKILL_NORMALISE."""
+    return canonical_skill(name) if SKILL_NORMALISE else _norm(name)
+
+
+def _skill_credit(job_name, cv_keys) -> float:
+    """
+    How much of one required skill the CV demonstrates: 1.0, partial, or 0.0.
+
+    Containment is only consulted when SKILL_PARTIAL_CREDIT is above zero and
+    both names clear SKILL_PARTIAL_MIN_LEN, so a two-letter token cannot match
+    inside an unrelated word.
+    """
+    key = _skill_key(job_name)
+    if not key:
+        return 0.0
+    if key in cv_keys:
+        return 1.0
+    if SKILL_PARTIAL_CREDIT <= 0.0 or len(key) < SKILL_PARTIAL_MIN_LEN:
+        return 0.0
+    for other in cv_keys:
+        if len(other) < SKILL_PARTIAL_MIN_LEN:
+            continue
+        if key in other or other in key:
+            return SKILL_PARTIAL_CREDIT
+    return 0.0
 
 
 # Skills that describe how someone works rather than what they can do.
@@ -435,8 +684,8 @@ def retrieve_active_job_listings() -> list[dict]:
                l.job_details, l.job_employment_type, l.job_posted_date,
                l.salary, l.outdated_manual,
                e.skills, e.education, e.education_requirement,
-               e.experience_years, e.work_mode,
-               e.benefits, e.translated_description
+               e.experience_years, e.work_mode, e.benefits,
+               e.embedding, e.embedding_model, e.embedding_dim
         FROM job_listing l
         JOIN job_enrichment e ON e.job_listing_id = l.id
         """
@@ -451,6 +700,9 @@ def retrieve_active_job_listings() -> list[dict]:
         row["skills"] = _decode_json(row.get("skills")) or []
         row["benefits"] = _decode_json(row.get("benefits")) or []
         row["education_requirement"] = _decode_json(row.get("education_requirement"))
+        # Left as the raw JSON string when decoding fails; cv_embedding
+        # validates shape, model and dimension before trusting it.
+        row["embedding"] = _decode_json(row.get("embedding")) or row.get("embedding")
         active.append(row)
     return active
 
@@ -516,11 +768,14 @@ def compare_skills(cv_skills, job_skills) -> SkillComparisonResult:
     if not job_names:
         return SkillComparisonResult(matched=[], missing=[], ratio=0.0)
 
-    cv_keys = {_norm(skill_name(s)) for s in (cv_skills or []) if skill_name(s)}
+    cv_keys = {_skill_key(skill_name(s)) for s in (cv_skills or []) if skill_name(s)}
     cv_keys.discard("")
 
-    matched = [name for name in job_names if _norm(name) in cv_keys]
-    missing = [name for name in job_names if _norm(name) not in cv_keys]
+    # Credit per required skill: 1.0, SKILL_PARTIAL_CREDIT, or 0.0. With the
+    # defaults this is exactly the previous membership test.
+    credits = {name: _skill_credit(name, cv_keys) for name in job_names}
+    matched = [name for name in job_names if credits[name] >= 1.0]
+    missing = [name for name in job_names if credits[name] < 1.0]
 
     # Score the two kinds separately, then combine. Pooling them let a CV
     # match a job on "teamwork" and "communication" alone and outscore a job
@@ -530,8 +785,12 @@ def compare_skills(cv_skills, job_skills) -> SkillComparisonResult:
     matched_hard = [n for n in matched if not is_soft_skill(n)]
     matched_soft = [n for n in matched if is_soft_skill(n)]
 
-    hard_ratio = len(matched_hard) / len(hard_required) if hard_required else 0.0
-    soft_ratio = len(matched_soft) / len(soft_required) if soft_required else 0.0
+    # Summed credit rather than counted matches, so a partial match
+    # contributes a fraction. Identical to counting when partial credit is 0.
+    hard_ratio = (sum(credits[n] for n in hard_required) / len(hard_required)
+                  if hard_required else 0.0)
+    soft_ratio = (sum(credits[n] for n in soft_required) / len(soft_required)
+                  if soft_required else 0.0)
 
     if hard_required and soft_required:
         ratio = HARD_SKILL_WEIGHT * hard_ratio + SOFT_SKILL_WEIGHT * soft_ratio
@@ -622,7 +881,8 @@ def compare_education(cv_education, job_requirement) -> EducationComparisonResul
     Returns:
         EducationComparisonResult — whether the requirement is met, the ratio
         (0.000–1.000), and a short human-readable detail. When the listing
-        states no requirement, returns meets_requirement=True with ratio 1.0.
+        states no requirement, returns meets_requirement=True with ratio
+        UNSTATED_EDUCATION_RATIO — unknown is not the same as satisfied.
 
     Throws:
         -
@@ -630,7 +890,9 @@ def compare_education(cv_education, job_requirement) -> EducationComparisonResul
     required_level, alternatives, raw_text = _parse_requirement(job_requirement)
 
     if required_level == 0 and not alternatives:
-        return EducationComparisonResult(True, 1.0, "No qualification stated by the listing")
+        return EducationComparisonResult(
+            True, UNSTATED_EDUCATION_RATIO, "No qualification stated by the listing"
+        )
 
     entries = [e for e in (cv_education or []) if isinstance(e, (dict, str))]
     if not entries:
@@ -742,9 +1004,10 @@ def compare_experience(cv_experience, required_years) -> ExperienceComparisonRes
     Returns:
         ExperienceComparisonResult — whether the requirement is met, the
         ratio (0.000–1.000), and the years counted on each side. When the
-        listing states no requirement, any experience scores 1.0 and none
-        scores 0.5 — unstated is not the same as "none needed", so a CV with
-        no experience is neither rewarded nor failed outright.
+        listing states no requirement, the ratio is
+        UNSTATED_EXPERIENCE_RATIO — unstated is not the same as "none
+        needed", so the listing is neither rewarded nor failed for staying
+        silent.
 
     Throws:
         -
@@ -754,7 +1017,9 @@ def compare_experience(cv_experience, required_years) -> ExperienceComparisonRes
 
     if required_years is None:
         if entries and cv_years > 0:
-            return ExperienceComparisonResult(True, 1.0, cv_years, None)
+            return ExperienceComparisonResult(
+                True, UNSTATED_EXPERIENCE_RATIO, cv_years, None
+            )
         if entries:
             # Dates unparseable but the CV does list roles.
             return ExperienceComparisonResult(True, 0.75, cv_years, None)
@@ -834,6 +1099,105 @@ def calculate_match_score(skill_result, education_result, experience_result,
 # ---------------------------------------------------------------------
 # M-02-08
 # ---------------------------------------------------------------------
+
+def normalise_semantics(values):
+    """
+    Rescales one CV's semantic scores across its candidate pool to 0.0-1.0.
+
+    `values` may contain None for listings with no usable vector; those pass
+    through as None and are left ungated by apply_semantic_gate.
+
+    When every listing is equally close — range too small to mean anything —
+    all of them return 1.0 rather than an arbitrary spread. That is the
+    honest reading: the embeddings are not distinguishing this pool, so the
+    gate should not pretend otherwise by suppressing some of it.
+
+    Parameters:
+        values: list[float | None]
+
+    Returns:
+        list[float | None] — same length and order.
+    """
+    present = [v for v in values if v is not None]
+    if not present:
+        return list(values)
+    low, high = min(present), max(present)
+    if high - low < 1e-6:
+        return [None if v is None else 1.0 for v in values]
+    return [None if v is None else (v - low) / (high - low) for v in values]
+
+
+def apply_semantic_gate(score, semantic):
+    """
+    Scales a finished score by how much the listing resembles the CV's field.
+
+    Applied after calculate_match_score rather than inside it: M-02-06's
+    weighted sum is what the Method Description specifies and what its tests
+    describe, and this is a separate judgement laid over the result rather
+    than a change to how the three categories combine.
+
+    `semantic` of None leaves the score alone. A listing with no usable vector
+    is not evidence of a domain mismatch, and treating it as one would push
+    down listings whose enrichment simply has a gap.
+
+    Parameters:
+        score: float — calculate_match_score's result.
+        semantic: float | None — cv_embedding.semantic_score's answer.
+
+    Returns:
+        float — 0.0-1.0, never above `score`.
+    """
+    if semantic is None or SEMANTIC_GATE <= 0.0:
+        return score
+    gate = max(0.0, min(1.0, SEMANTIC_GATE))
+    return round(score * ((1.0 - gate) + gate * float(semantic)), 3)
+
+
+def blend_skill_ratio(token_ratio, semantic):
+    """
+    Combines M-02-03's token overlap with a semantic similarity.
+
+    Not part of M-02-03 — that method's own return value is untouched, and
+    every one of its unit tests still describes it exactly. The blend happens
+    in the orchestration layer, where the listing's stored vector is
+    available.
+
+    `semantic` of None means the listing has no usable vector, and the token
+    ratio stands alone. That is deliberate: scoring a listing down for an
+    enrichment gap would punish the listing for something the candidate has
+    no part in.
+
+    Parameters:
+        token_ratio: float — SkillComparisonResult.ratio.
+        semantic: float | None — cv_embedding.semantic_score's answer.
+
+    Returns:
+        float — 0.0–1.0.
+    """
+    if semantic is None or SEMANTIC_WEIGHT <= 0.0:
+        return token_ratio
+    weight = max(0.0, min(1.0, SEMANTIC_WEIGHT))
+    return (1.0 - weight) * float(token_ratio) + weight * float(semantic)
+
+
+class _BlendedSkillResult:
+    """
+    Carries the blended ratio into calculate_match_score.
+
+    A thin stand-in rather than a mutated SkillComparisonResult: M-02-03's
+    result is what the Test Record describes and what gets stored as the
+    matched tags, so it is passed through unchanged and only the number the
+    scorer reads is substituted.
+    """
+
+    __slots__ = ("ratio", "matched", "matched_hard", "matched_soft")
+
+    def __init__(self, source, ratio):
+        self.ratio = ratio
+        self.matched = source.matched
+        self.matched_hard = getattr(source, "matched_hard", None)
+        self.matched_soft = getattr(source, "matched_soft", None)
+
 
 def rank_job_matches(matches) -> list[JobMatchResult]:
     """
@@ -950,7 +1314,7 @@ def load_job_match_results(cv_id) -> list[dict]:
                m.missing_categories, m.rank_position, m.computed_at,
                l.url, l.job_title, l.company_name, l.job_location,
                l.job_employment_type, l.salary, l.outdated_manual,
-               e.skills, e.translated_description, e.work_mode
+               e.skills, e.work_mode
         FROM job_match m
         JOIN job_listing l ON l.id = m.job_listing_id
         LEFT JOIN job_enrichment e ON e.job_listing_id = m.job_listing_id
@@ -970,6 +1334,34 @@ def load_job_match_results(cv_id) -> list[dict]:
 # ---------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------
+
+def _encode_cv_safely(cv_data):
+    """
+    The CV's vector, or None when semantic scoring is off or unavailable.
+
+    Never raises. A missing sentence-transformers install, or a model that
+    will not load, degrades matching to the lexical score it always used
+    rather than failing the whole match — the person still gets a ranking.
+    """
+    if SEMANTIC_WEIGHT <= 0.0 and SEMANTIC_GATE <= 0.0:
+        return None
+    try:
+        import cv_embedding
+        return cv_embedding.encode_cv(cv_data)
+    except Exception:
+        return None
+
+
+def _semantic_for(cv_vector, listing):
+    """Semantic score for one listing; None when unavailable."""
+    if not cv_vector:
+        return None
+    try:
+        import cv_embedding
+        return cv_embedding.semantic_score(cv_vector, listing)
+    except Exception:
+        return None
+
 
 def match_cv_against_listings(cv_id) -> list[JobMatchResult]:
     """
@@ -997,8 +1389,16 @@ def match_cv_against_listings(cv_id) -> list[JobMatchResult]:
     missing = [c for c in cv_data_adapter.CV_CATEGORIES if c not in available]
 
     listings = retrieve_active_job_listings()
+    cv_vector = _encode_cv_safely(cv_data)
+
+    # Computed for the whole pool up front: normalisation needs every
+    # listing's similarity before any single score can be gated.
+    semantics = [_semantic_for(cv_vector, listing) for listing in listings]
+    if SEMANTIC_NORMALIZE:
+        semantics = normalise_semantics(semantics)
+
     results = []
-    for listing in listings:
+    for index, listing in enumerate(listings):
         skill_result = compare_skills(cv_data["skills"], listing.get("skills"))
         education_result = compare_education(
             cv_data["education"],
@@ -1009,7 +1409,12 @@ def match_cv_against_listings(cv_id) -> list[JobMatchResult]:
         experience_result = compare_experience(
             cv_data["work_experience"], listing.get("experience_years")
         )
-        score = calculate_match_score(skill_result, education_result, experience_result, available)
+        semantic = semantics[index]
+        blended = _BlendedSkillResult(
+            skill_result, blend_skill_ratio(skill_result.ratio, semantic)
+        )
+        score = calculate_match_score(blended, education_result, experience_result, available)
+        score = apply_semantic_gate(score, semantic)
         results.append(JobMatchResult(
             job_listing_id=listing["id"],
             score=score,

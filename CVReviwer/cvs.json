@@ -1485,5 +1485,373 @@
       ],
       "analyzedAt": "2026-08-06T18:22:00.809070+00:00"
     }
+  },
+  {
+    "id": "bdcc84bd7bbc47eba5d1d95c210751a9",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\bdcc84bd7bbc47eba5d1d95c210751a9_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-10T06:25:18.335585+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Java Project",
+          "position": "Front-End Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-10T06:25:24.656587+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [
+        "Add proficiency levels to skills to enhance completeness.",
+        "Provide specific start dates for work experience to improve clarity.",
+        "Use action verbs consistently in work experience descriptions for better clarity."
+      ],
+      "analyzedAt": "2026-08-10T06:25:26.886469+00:00"
+    }
+  },
+  {
+    "id": "abe6053323544c03a62dc9980a2a8f71",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\abe6053323544c03a62dc9980a2a8f71_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-10T13:19:02.040986+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-10T13:19:10.943783+00:00"
+    }
+  },
+  {
+    "id": "2d38843c52ca4807886103863c79b86b",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\2d38843c52ca4807886103863c79b86b_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-10T13:22:04.478463+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-10T13:22:10.868392+00:00"
+    }
+  },
+  {
+    "id": "4e852c7df89c40a0b3cef1bfe30f1d89",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\4e852c7df89c40a0b3cef1bfe30f1d89_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-10T13:41:45.511076+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-10T13:41:56.745439+00:00"
+    }
   }
 ]

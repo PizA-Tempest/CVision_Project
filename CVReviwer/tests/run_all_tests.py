@@ -144,7 +144,8 @@ def main():
     except Exception as ex:
         skipped_modules.append(f"run_tests (id map): {ex}")
 
-    for name in ("test_cv_upload", "test_embed", "test_srs_046", "test_match"):
+    for name in ("test_cv_upload", "test_embed", "test_srs_046", "test_match",
+                 "test_analysis"):
         try:
             module = importlib.import_module(name)
         except Exception as ex:
@@ -183,6 +184,8 @@ def main():
             key = "UT-3"
         elif module == "test_match":
             key = "UT-2"
+        elif module == "test_analysis":
+            key = "UT-4"
         else:
             key = "other"
         entry = by_feature.setdefault(key, {"PASS": 0, "FAIL": 0, "SKIP": 0})
@@ -192,7 +195,8 @@ def main():
     for key in sorted(by_feature):
         counts = by_feature[key]
         label = {"UT-2": "Feature 2 (Job Matching)",
-                 "UT-3": "Feature 3 (CV Upload)"}.get(key, key)
+                 "UT-3": "Feature 3 (CV Upload)",
+                 "UT-4": "Feature 4 (CV Analysis)"}.get(key, key)
         print(f"  {label:<28} PASS {counts['PASS']:>3} | "
               f"FAIL {counts['FAIL']:>2} | SKIP {counts['SKIP']:>2}")
     print(f"\n  TOTAL: {total} | PASS: {passed} | FAIL: {failed} | SKIP: {skipped}")

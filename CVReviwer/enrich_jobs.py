@@ -48,6 +48,15 @@ from datetime import datetime, timezone
 
 import db
 
+
+class EnrichmentError(Exception):
+    """
+    Raised when enrichment cannot proceed — no API key, or the embedding model
+    will not load. Raised rather than printed and returned as an exit code, so
+    a UI caller can show the message instead of it vanishing into stdout.
+    """
+
+
 MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
 EMBED_BATCH_SIZE = 16
 LLM_CONCURRENCY = 2
@@ -83,7 +92,7 @@ REASONING_MODEL_PREFIXES = ("gpt-5", "o1", "o3", "o4")
 
 _ENRICHMENT_COLUMNS = (
     "skills", "education", "education_requirement", "experience_years",
-    "work_mode", "benefits", "translated_description", "embedding",
+    "work_mode", "benefits", "embedding",
     "embedding_model", "embedding_dim", "enriched_at",
 )
 
@@ -121,6 +130,22 @@ def fetch_listings(only_missing=True, limit=None):
     return db.query(sql)
 
 
+def count_missing():
+    """
+    How many job listings have no enrichment row.
+
+    Lets a caller show "N listings need enrichment" without loading the
+    listings themselves — used by the admin panel to offer enrichment after a
+    scraper run.
+    """
+    rows = db.query(
+        "SELECT COUNT(*) AS n FROM job_listing l "
+        "LEFT JOIN job_enrichment e ON e.job_listing_id = l.id "
+        "WHERE e.job_listing_id IS NULL"
+    )
+    return int(rows[0]["n"]) if rows else 0
+
+
 def save_enrichment(job_listing_id, fields):
     """
     Upserts one job_enrichment row. job_listing_id is the primary key, so a
@@ -130,14 +155,14 @@ def save_enrichment(job_listing_id, fields):
         """
         INSERT INTO job_enrichment
             (job_listing_id, skills, education, education_requirement,
-             experience_years, work_mode, benefits, translated_description,
+             experience_years, work_mode, benefits,
              embedding, embedding_model, embedding_dim, enriched_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         ON DUPLICATE KEY UPDATE
             skills = VALUES(skills), education = VALUES(education),
             education_requirement = VALUES(education_requirement),
             experience_years = VALUES(experience_years), work_mode = VALUES(work_mode),
-            benefits = VALUES(benefits), translated_description = VALUES(translated_description),
+            benefits = VALUES(benefits),
             embedding = VALUES(embedding), embedding_model = VALUES(embedding_model),
             embedding_dim = VALUES(embedding_dim), enriched_at = VALUES(enriched_at)
         """,
@@ -150,7 +175,6 @@ def save_enrichment(job_listing_id, fields):
             fields.get("experience_years"),
             fields.get("work_mode"),
             json.dumps(fields.get("benefits") or [], ensure_ascii=False),
-            fields.get("translated_description"),
             json.dumps(fields.get("embedding")) if fields.get("embedding") else None,
             fields.get("embedding_model"),
             fields.get("embedding_dim"),
@@ -177,7 +201,7 @@ def normalize_output(listing, extracted):
     Ported from embed.py's `normalize_output`, minus the fields that now live
     in job_listing and must not be overwritten by a model's guess: `location`,
     `salary`, `job_type`, `company`, `title` and `description` are what the
-    provider actually returned, and Feature 1 owns them. Only the seven
+    provider actually returned, and Feature 1 owns them. Only the six
     genuinely derived fields are kept.
 
     `job_type` is the clearest case — the LLM is asked to normalise it to
@@ -208,9 +232,6 @@ def normalize_output(listing, extracted):
         "experience_years": experience,
         "work_mode": get_or_null("work_mode", None),
         "benefits": get_or_null("benefits", []) or [],
-        "translated_description": get_or_null(
-            "translated_description", listing.get("job_details") or ""
-        ),
     }
 
 
@@ -270,18 +291,25 @@ def is_bad_result(data):
     real listings — the chef and kitchen roles in particular — genuinely list
     no discrete skills, so the model returned [] four times, every retry was
     spent re-deriving the same right answer, and the run ended by discarding
-    the good translated_description it had along with it.
+    the education and experience fields it had correctly extracted along with it.
 
-    A result now fails only if it is unusable: absent, not a mapping, or with
-    no translated_description. An empty skills list is reported by
-    `enrich` afterwards rather than retried, since it means the listing will
-    match on education and experience alone.
+    A result now fails only if it is unusable: absent, not a mapping, or not
+    shaped like the requested schema at all. The presence of a `skills` key is
+    what stands for the latter — it is the one field every listing is asked
+    for, so a reply without it did not follow the schema. An empty skills list
+    is *not* a failure; it is reported by `enrich` afterwards rather than
+    retried, since it means the listing will match on education and experience
+    alone.
+
+    Before the fit explanation was removed, `translated_description` served as
+    this signal. Nothing writes that field now, so the schema check moved to
+    `skills`.
     """
     if not isinstance(data, dict) or not data:
         return True
-    if data.get("translated_description") is None:
+    if "skills" not in data:
         return True
-    if not isinstance(data.get("skills", []), list):
+    if not isinstance(data.get("skills"), list):
         return True
     return False
 
@@ -309,13 +337,12 @@ async def _extract_with_llm(client, text, model="gpt-4o-mini"):
     Extract structured job data in English.
 
     Return ONLY valid JSON (no explanation, no markdown) with this schema:
-    {{"location": null, "skills": [], "salary": null, "job_type": null, "work_mode": null, "benefits": [], "experience_years": null, "education": null, "education_requirement": {{"min_degree_level": null, "fields": []}}, "translated_description": ""}}
+    {{"location": null, "skills": [], "salary": null, "job_type": null, "work_mode": null, "benefits": [], "experience_years": null, "education": null, "education_requirement": {{"min_degree_level": null, "fields": []}}}}
 
     Rules:
     - Detect the language automatically
     - Location: Translate to English if not English; keep structure: District, City; Do NOT invent new formats
     - Skills, benefits, education: Translate to English; Do NOT translate technical terms (Python, React, SQL, etc.)
-    - translated_description: Translate and summarize in 2-3 sentences
     - job_type: fulltime | parttime | contract | freelance | null
     - work_mode: remote | hybrid | onsite | null
     - experience_years: number only
@@ -425,21 +452,44 @@ async def _extract_all(client, listings):
     return await asyncio.gather(*(one(l) for l in listings))
 
 
-def enrich(only_missing=True, limit=None):
+def enrich(only_missing=True, limit=None, model=None, progress=None):
+    """
+    Enriches job listings and returns a summary.
+
+    Parameters:
+        only_missing: bool — skip listings that already have enrichment.
+        limit: int | None — process at most this many.
+        model: SentenceTransformer | None — a preloaded model. Streamlit
+            callers pass a cached one so the ~400 MB load happens once per
+            session instead of once per scraper run.
+        progress: callable | None — called as progress(done, total, message)
+            so a caller can drive a progress bar. Printing to stdout is
+            invisible in a web UI.
+
+    Returns:
+        dict — {"enriched": int, "total": int, "no_skills": [titles],
+                "message": str}. `main()` renders this for the command line;
+        the admin panel renders it as Streamlit widgets.
+    """
+    def report(done, total, message):
+        if progress:
+            progress(done, total, message)
+        else:
+            print(message)
+
     listings = fetch_listings(only_missing=only_missing, limit=limit)
     if not listings:
-        print("Nothing to enrich — every listing already has enrichment.")
-        print("Use --force to regenerate, or run a scraper first.")
-        return 0
+        return {"enriched": 0, "total": 0, "no_skills": [],
+                "message": "Nothing to enrich — every listing already has "
+                           "enrichment. Use --force to regenerate."}
 
-    print(f"Listings to enrich: {len(listings)}")
+    report(0, len(listings), f"Listings to enrich: {len(listings)}")
 
     # Imported here rather than at module top: the ML stack takes a while to
     # load, and nothing above needs it. (embed.py imports SentenceTransformer
     # at module level, which is why reaching any M-03 method loads it too —
     # noted in TBD_and_Conflicts.md Part 4.)
     from openai import AsyncOpenAI
-    from sentence_transformers import SentenceTransformer
     try:
         from dotenv import load_dotenv
         load_dotenv()
@@ -448,8 +498,8 @@ def enrich(only_missing=True, limit=None):
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        print("OPENAI_API_KEY is not set. Put it in .env or the environment.", file=sys.stderr)
-        return 1
+        raise EnrichmentError(
+            "OPENAI_API_KEY is not set. Put it in .env or the environment.")
 
     # The embedding model is loaded BEFORE any API call, not after.
     #
@@ -458,27 +508,29 @@ def enrich(only_missing=True, limit=None):
     # disk space — threw away every LLM call the run had just paid for, with
     # nothing written to the database. Everything that can fail for free is
     # now made to fail first.
-    print(f"Loading embedding model {MODEL_NAME}...")
-    try:
-        model = SentenceTransformer(MODEL_NAME)
-    except Exception as ex:
-        print(f"Could not load the embedding model: {type(ex).__name__}: {ex}",
-              file=sys.stderr)
-        if "torchvision" in str(ex) or "torchvision" in type(ex).__name__:
-            print("\n  sentence-transformers imports torchvision when the model is",
-                  file=sys.stderr)
-            print("  instantiated, so a missing install only shows up here. Install it:",
-                  file=sys.stderr)
-            print("      pip install torchvision", file=sys.stderr)
-            print("  If pip reports a conflict with your torch version, install both",
-                  file=sys.stderr)
-            print("  together so it resolves them jointly:", file=sys.stderr)
-            print("      pip install --upgrade torch torchvision", file=sys.stderr)
-        print("\n  No API calls were made, so nothing has been spent.", file=sys.stderr)
-        return 1
+    if model is None:
+        # Imported only when one has to be built. A caller that supplies a
+        # preloaded model — the admin panel caches one per session — should
+        # not pay the import, and neither should a test that injects a stub.
+        report(0, len(listings), f"Loading embedding model {MODEL_NAME}...")
+        try:
+            from sentence_transformers import SentenceTransformer
+            model = SentenceTransformer(MODEL_NAME)
+        except Exception as ex:
+            hint = ""
+            if "torchvision" in str(ex):
+                hint = ("  sentence-transformers imports torchvision when the model "
+                        "is instantiated, so a missing install only shows up here. "
+                        "Install it with 'pip install torchvision', or "
+                        "'pip install --upgrade torch torchvision' if pip reports a "
+                        "version conflict.")
+            raise EnrichmentError(
+                f"Could not load the embedding model: {type(ex).__name__}: {ex}. "
+                f"{hint} No API calls were made, so nothing has been spent."
+            ) from ex
 
     client = AsyncOpenAI(api_key=api_key)
-    print("Extracting structured fields...")
+    report(0, len(listings), "Extracting structured fields...")
     extracted = dict(asyncio.run(_extract_all(client, listings)))
 
     ids = [l["id"] for l in listings]
@@ -487,7 +539,7 @@ def enrich(only_missing=True, limit=None):
         for l in listings
     ]
 
-    print("Embedding and saving...")
+    report(0, len(listings), "Embedding and saving...")
     saved = 0
     for start in range(0, len(texts), EMBED_BATCH_SIZE):
         batch_ids = ids[start:start + EMBED_BATCH_SIZE]
@@ -501,25 +553,19 @@ def enrich(only_missing=True, limit=None):
             # the work already paid for; the next run picks up the rest.
             save_enrichment(listing_id, fields)
             saved += 1
-        print(f"  saved {saved}/{len(ids)}")
+        report(saved, len(ids), f"  saved {saved}/{len(ids)}")
 
     # A run used to end with nothing but a scroll-back of retry messages, so
-    # the only way to tell how it went was to read them all. Report it.
+    # the only way to tell how it went was to read them all. Summarised
+    # instead, and returned rather than printed so a UI can render it too.
     by_title = {l["id"]: (l.get("job_title") or l["id"]) for l in listings}
     no_skills = [by_title[i] for i in ids if not extracted[i].get("skills")]
-    no_education = [i for i in ids if not extracted[i].get("education_requirement")]
-    print(f"\nEnriched {saved} listing(s).")
-    print(f"  with skills            {saved - len(no_skills)}/{saved}")
-    print(f"  with an education rule {saved - len(no_education)}/{saved}")
-    if no_skills:
-        print(f"\n  {len(no_skills)} listing(s) have no skills and will match on education")
-        print(f"  and experience alone:")
-        for title in no_skills[:10]:
-            print(f"    - {title}")
-        print("\n  That is often correct — many non-technical roles list no discrete")
-        print("  skills. If it looks wrong, the description may open with company")
-        print("  boilerplate; raise DESCRIPTION_CHAR_LIMIT and re-run with --force.")
-    return 0
+    return {
+        "enriched": saved,
+        "total": len(ids),
+        "no_skills": no_skills,
+        "message": f"Enriched {saved} of {len(ids)} listing(s).",
+    }
 
 
 def main():
@@ -531,7 +577,24 @@ def main():
     args = ap.parse_args()
 
     try:
-        return enrich(only_missing=not args.force, limit=args.limit)
+        summary = enrich(only_missing=not args.force, limit=args.limit)
+        print(f"\n{summary['message']}")
+        with_skills = summary["total"] - len(summary["no_skills"])
+        if summary["total"]:
+            print(f"  with skills  {with_skills}/{summary['total']}")
+        if summary["no_skills"]:
+            print(f"\n  {len(summary['no_skills'])} listing(s) have no skills and will")
+            print("  match on education and experience alone:")
+            for title in summary["no_skills"][:10]:
+                print(f"    - {title}")
+            print("\n  That is often correct — many non-technical roles list no")
+            print("  discrete skills. If it looks wrong, the description may open")
+            print("  with company boilerplate; raise DESCRIPTION_CHAR_LIMIT and")
+            print("  re-run with --force.")
+        return 0
+    except EnrichmentError as ex:
+        print(f"{ex}", file=sys.stderr)
+        return 1
     except db.DatabaseError as ex:
         print(f"Database error: {ex}", file=sys.stderr)
         detail = getattr(ex, "detail", None)

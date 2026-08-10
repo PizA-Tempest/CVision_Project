@@ -99,7 +99,6 @@ class FakeDB:
                 "experience_years": experience_years,
                 "work_mode": None,
                 "benefits": "[]",
-                "translated_description": "A job.",
             }
         return listing_id
 
@@ -130,7 +129,6 @@ class FakeDB:
                        ("url", "job_title", "company_name", "job_location",
                         "job_employment_type", "salary", "outdated_manual")},
                     "skills": enrichment.get("skills", "[]"),
-                    "translated_description": enrichment.get("translated_description"),
                     "work_mode": enrichment.get("work_mode"),
                 })
             return out

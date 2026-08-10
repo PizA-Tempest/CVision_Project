@@ -160,11 +160,50 @@ def load_listings():
 
 
 def _write_listing_rows(cursor, jobs):
-    """Clears job_listing and reinserts every row in `jobs` using the
-    cursor it's given. Shared by both save_listings paths — its own
-    transaction, or a caller's (see save_listings' conn parameter)."""
-    cursor.execute("DELETE FROM job_listing")
-    for job in jobs:
+    """
+    Makes job_listing match `jobs` exactly, using the cursor it is given.
+    Shared by both save_listings paths — its own transaction, or a caller's
+    (see save_listings' conn parameter).
+
+    WHY THIS DIFFS INSTEAD OF CLEARING THE TABLE
+    ============================================
+    This used to run a single "DELETE FROM job_listing" and reinsert every
+    row. The observable result was the same, and it was simple — but Feature 2
+    later added job_enrichment and job_match, both keyed to job_listing.id
+    with ON DELETE CASCADE. That turned every rewrite into a purge of the two
+    Feature 2 tables:
+
+        deleting one job listing  -> every listing lost its enrichment
+        editing one job title     -> the same
+        marking one outdated      -> the same
+        any scraper fetch run     -> the same
+
+    and because retrieveActiveJobListings (M-02-02) joins job_enrichment, the
+    Jobseeker was then told "no job listings are currently available" even
+    though the listings were all still there. Regenerating the lost enrichment
+    costs one LLM call per listing.
+
+    So rows that survive a rewrite are now updated in place and never deleted,
+    which leaves their enrichment attached. Only listings genuinely absent
+    from `jobs` are deleted, and those *should* cascade — enrichment for a
+    listing that no longer exists is exactly what the constraint is for.
+
+    M-026's contract is unchanged: the collection handed in is the complete
+    new state of the table. Only the mechanism differs.
+    """
+    incoming = {}
+    for job in jobs or []:
+        listing_id = str(job.get("id") or uuid.uuid4())
+        incoming[listing_id] = job
+
+    cursor.execute("SELECT id FROM job_listing")
+    existing = {str(row[0]) if not isinstance(row, dict) else str(row["id"])
+                for row in cursor.fetchall()}
+
+    for listing_id in existing - set(incoming):
+        cursor.execute("DELETE FROM job_listing WHERE id = %s", (listing_id,))
+
+    for listing_id, job in incoming.items():
         cursor.execute(
             """
             INSERT INTO job_listing
@@ -172,9 +211,20 @@ def _write_listing_rows(cursor, jobs):
                  job_details, job_employment_type, job_posted_date, salary,
                  outdated_manual)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                scraper_id = VALUES(scraper_id),
+                url = VALUES(url),
+                job_title = VALUES(job_title),
+                company_name = VALUES(company_name),
+                job_location = VALUES(job_location),
+                job_details = VALUES(job_details),
+                job_employment_type = VALUES(job_employment_type),
+                job_posted_date = VALUES(job_posted_date),
+                salary = VALUES(salary),
+                outdated_manual = VALUES(outdated_manual)
             """,
             (
-                job.get("id") or str(uuid.uuid4()),
+                listing_id,
                 job.get("scraper_id"),
                 job.get("url"),
                 job.get("job_title"),
@@ -182,13 +232,12 @@ def _write_listing_rows(cursor, jobs):
                 job.get("job_location"),
                 job.get("job_details"),
                 job.get("job_employment_type") or None,
-                # C1: job_posted_date is a Timestamp column, but the
-                # value arriving here is whatever string the provider
-                # returned (or an already-formatted ISO-Z string from
-                # load_listings). Coerced to a real datetime; an
-                # unparseable provider date becomes NULL, which the
-                # 365-day rule then treats as "not outdated"
-                # (UT-1-27-004's behaviour) rather than crashing the
+                # C1: job_posted_date is a Timestamp column, but the value
+                # arriving here is whatever string the provider returned (or
+                # an already-formatted ISO-Z string from load_listings).
+                # Coerced to a real datetime; an unparseable provider date
+                # becomes NULL, which the 365-day rule then treats as "not
+                # outdated" (UT-1-27-004's behaviour) rather than crashing the
                 # whole save — see TBD_and_Conflicts.md.
                 _parse_posted_date(job.get("job_posted_date")),
                 job.get("salary") or None,

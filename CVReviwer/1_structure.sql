@@ -172,7 +172,7 @@ CREATE TABLE log_entry (
 -- =====================================================================
 
 -- JobEnrichment ---------------------------------------------------------
--- The seven fields Feature 2 needs that Feature 1's job_listing does not
+-- The six fields Feature 2 needs that Feature 1's job_listing does not
 -- carry, because they are *derived* rather than scraped: an LLM reads the
 -- job description and returns structured fields, then a SentenceTransformer
 -- turns title+skills into a vector.
@@ -227,11 +227,6 @@ CREATE TABLE job_enrichment (
 
     -- JSON array of strings; empty array in all current samples.
     benefits                JSON         NULL,
-
-    -- English translation of the description, used for the fit explanation.
-    -- Observed max 2,651 chars; LONGTEXT because Thai listings translated
-    -- to English can run long and this is not a field to truncate.
-    translated_description  LONGTEXT     NULL,
 
     -- The 384-float SentenceTransformer vector, ~8 KB of JSON per row.
     -- JSON rather than a vector type: MySQL 8.0 has none, the comparison

@@ -81,6 +81,7 @@ import streamlit as st
 import db
 import job_controller
 import log_service
+import enrich_jobs
 import scraper_controller
 import scraper_ui
 import validation_service
@@ -154,6 +155,89 @@ def _authenticate(username, password):
 # Scrapers tab — UC-F1-002 / UC-F1-003
 # ---------------------------------------------------------------------
 
+@st.cache_resource(show_spinner=False)
+def _embedding_model():
+    """
+    Loads the sentence-transformer once per session.
+
+    Roughly 400 MB and several seconds; without caching it would reload on
+    every scraper run. Cached here rather than inside enrich_jobs because
+    st.cache_resource is a Streamlit concept and that module has to stay
+    runnable from the command line.
+    """
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer(enrich_jobs.MODEL_NAME)
+
+
+def _run_enrichment():
+    """
+    Enriches listings that have none, reporting progress in the UI.
+
+    Enrichment belongs to Feature 2 but is triggered here, in the admin UI,
+    because that is the only layer allowed to depend on both features.
+    Putting it inside execute() (M-01-09) or run_scraper() (M-01-08) would
+    make a Feature 1 service depend on Feature 2, and would also mean a
+    scraper run could not finish until every LLM call had — turning a
+    two-second fetch into a two-minute one.
+    """
+    progress_bar = st.progress(0.0)
+    status = st.empty()
+
+    def report(done, total, message):
+        status.caption(message)
+        if total:
+            progress_bar.progress(min(1.0, done / total))
+
+    try:
+        summary = enrich_jobs.enrich(only_missing=True,
+                                     model=_embedding_model(),
+                                     progress=report)
+    except enrich_jobs.EnrichmentError as ex:
+        progress_bar.empty(); status.empty()
+        st.warning(f"Listings were saved, but enrichment did not run: {ex}")
+        return
+    except Exception as ex:
+        progress_bar.empty(); status.empty()
+        # Never let this fail the scrape: the listings are already stored, and
+        # enrichment can be re-run at any time without losing them.
+        st.warning(f"Listings were saved, but enrichment failed: "
+                   f"{type(ex).__name__}: {ex}. You can retry from this panel "
+                   f"or run `python enrich_jobs.py`.")
+        return
+
+    progress_bar.empty(); status.empty()
+    st.success(summary["message"])
+    if summary["no_skills"]:
+        with st.expander(f"{len(summary['no_skills'])} listing(s) produced no skills"):
+            st.caption(
+                "These will match on education and experience alone. That is "
+                "often correct — many non-technical roles list no discrete "
+                "skills — but it can also mean the description opens with "
+                "company boilerplate."
+            )
+            for title in summary["no_skills"]:
+                st.write(f"- {title}")
+
+
+def _render_enrichment_panel():
+    """Shows how many listings still need enrichment, and offers to do it."""
+    try:
+        missing = enrich_jobs.count_missing()
+    except db.DatabaseError:
+        return
+    if not missing:
+        return
+    st.info(
+        f"**{missing} job listing(s) have not been enriched yet.** "
+        "Matching compares a CV against each listing's extracted skills, so "
+        "un-enriched listings are invisible to Jobseekers until this runs. "
+        "It costs one AI call per listing."
+    )
+    if st.button(f"Enrich {missing} listing(s) now", type="primary", key="enrich_now"):
+        _run_enrichment()
+        st.rerun()
+
+
 def _render_scrapers_tab():
     auto_results = st.session_state.get("_auto_run_results") or []
     for name, added, skipped, error in auto_results:
@@ -161,6 +245,23 @@ def _render_scrapers_tab():
             st.warning(f"Auto-run **{name}** failed: {error}")
         else:
             st.success(f"Auto-ran **{name}** — {added} new jobs, {skipped} skipped.")
+
+    st.session_state.setdefault("auto_enrich", True)
+    st.toggle(
+        "Enrich new listings automatically after a run",
+        key="auto_enrich",
+        help="Extracts skills, qualification and experience requirements from "
+             "each new listing so Jobseekers can be matched against it. Costs "
+             "one AI call per new listing. Turn this off to enrich manually "
+             "instead.",
+    )
+
+    # Fires after the rerun that follows a scraper run, so the "N new jobs"
+    # message is already on screen before the slower work begins.
+    if st.session_state.pop("_enrich_after_run", False) and st.session_state["auto_enrich"]:
+        _run_enrichment()
+
+    _render_enrichment_panel()
 
     run_result = st.session_state.get("scraper_run_result")
     if run_result:
@@ -288,6 +389,7 @@ def _render_scrapers_tab():
                     try:
                         result = scraper_controller.run_scraper(sid)
                         st.session_state["scraper_run_result"] = {"name": s["website_name"], **result}
+                        st.session_state["_enrich_after_run"] = bool(result.get("added"))
                     except (scraper_controller.APIError, scraper_controller.SnapshotTimeout) as ex:
                         st.session_state["scraper_run_result"] = {"name": s["website_name"], "error": str(ex)}
                 st.rerun()
