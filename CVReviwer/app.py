@@ -375,6 +375,19 @@ def _skill_label(skill):
     return str(skill)
 
 
+def display_upload_notification(filename):
+    """
+    M-02-41 — tells the Jobseeker their CV was read (SRS-050).
+
+    Called only once process_cv has returned, so the notification follows the
+    CV information actually being retrieved rather than the upload merely
+    being received. Extracted from the page body so the tie between the two
+    can be tested: UT-2-41-002 asserts nothing is drawn when the chain stops
+    early, which is the half that matters.
+    """
+    st.success(f"✅ Upload successful: {filename}")
+
+
 def _show_matching_error(exception):
     """
     Shows M-02-12's user-facing message, with the underlying cause tucked
@@ -545,7 +558,7 @@ if uploaded_file:
             cv_file_id, masked_fields = process_cv(uploaded_file)
             st.session_state["cv_file_id"] = cv_file_id
             st.session_state["masked_fields"] = masked_fields
-            st.success(f"✅ Upload successful: {uploaded_file.name}")
+            display_upload_notification(uploaded_file.name)
         except UnreadablePDFException:
             st.error(
                 "❌ We could not read any text from this PDF. It looks like an "
