@@ -3,7 +3,7 @@ services:
     name: cvision
     runtime: python
     region: oregon
-    plan: 1c-2g
+    plan: free
     buildCommand: pip install --upgrade pip && pip install -r CVReviwer/requirements.txt
     startCommand: streamlit run CVReviwer/app.py --server.port $PORT --server.address 0.0.0.0
     envVars:
@@ -21,12 +21,6 @@ services:
         sync: false
       - key: DB_NAME
         value: cvision
-    disk:
-      name: cvision-uploads
-      mountPath: /opt/render/project/src/CVReviwer/uploads
-      sizeGB: 1
 
-# NOTE: Render Blueprints only support Postgres in the `databases:` block,
-# so MySQL is NOT defined here. Create a managed MySQL elsewhere
-# (Aiven / Railway / your existing service in Oregon) and paste its
-# host/user/password into DB_HOST / DB_USER / DB_PASSWORD above.
+# Free plan: no persistent disk (uploads/ resets on restart).
+# Paid 1c-2g + disk block restores persistence + RAM for torch.
