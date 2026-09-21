@@ -2,7 +2,8 @@ services:
   - type: web
     name: cvision
     runtime: python
-    plan: standard
+    region: oregon
+    plan: 1c-2g
     buildCommand: pip install --upgrade pip && pip install -r CVReviwer/requirements.txt
     startCommand: streamlit run CVReviwer/app.py --server.port $PORT --server.address 0.0.0.0
     envVars:
@@ -11,31 +12,21 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: DB_HOST
-        fromDatabase:
-          name: cvision-db
-          property: host
+        sync: false
       - key: DB_PORT
-        fromDatabase:
-          name: cvision-db
-          property: port
+        value: "3306"
       - key: DB_USER
-        fromDatabase:
-          name: cvision-db
-          property: user
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase:
-          name: cvision-db
-          property: password
+        sync: false
       - key: DB_NAME
-        fromDatabase:
-          name: cvision-db
-          property: database
+        value: cvision
     disk:
       name: cvision-uploads
       mountPath: /opt/render/project/src/CVReviwer/uploads
       sizeGB: 1
 
-databases:
-  - name: cvision-db
-    plan: basic-256mb
-    mysqlVersion: "8.0"
+# NOTE: Render Blueprints only support Postgres in the `databases:` block,
+# so MySQL is NOT defined here. Create a managed MySQL elsewhere
+# (Aiven / Railway / your existing service in Oregon) and paste its
+# host/user/password into DB_HOST / DB_USER / DB_PASSWORD above.
