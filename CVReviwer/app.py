@@ -66,6 +66,21 @@ from openai import OpenAI
 
 load_dotenv()
 
+# Streamlit Community Cloud has no .env — secrets arrive as st.secrets.
+# Mirror them into os.environ so db.py and the OpenAI calls (os.getenv)
+# work unchanged in both places. Local .env wins when both are set.
+try:
+    for _k in ("OPENAI_API_KEY", "DB_HOST", "DB_PORT",
+               "DB_USER", "DB_PASSWORD", "DB_NAME"):
+        try:
+            _v = st.secrets.get(_k)
+        except Exception:
+            _v = None
+        if _v and not os.environ.get(_k):
+            os.environ[_k] = str(_v)
+except Exception:
+    pass
+
 from admin import show_admin_page
 
 # Feature 3 (approved — imported and called, never modified)

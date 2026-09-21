@@ -1,0 +1,3 @@
+# Root pointer for Streamlit Community Cloud (app lives in CVReviwer/).
+# Cloud installs repo-root requirements.txt; this pulls the real list.
+-r CVReviwer/requirements.txt
