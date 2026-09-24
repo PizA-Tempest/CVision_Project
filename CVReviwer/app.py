@@ -54,12 +54,32 @@ not merely executed and discarded. One caveat carried over from Feature 3's
 own test results: its phone regex is US-centric (UT-3-11-004 fails,
 UT-3-12-003 is skipped), so Thai mobile numbers are not detected and therefore
 not masked.
+
+REVIEW BEFORE CALCULATE
+=======================
+Matching no longer starts on its own once extraction finishes. The extracted
+skills, education and work experience are shown as editable tables, and the
+Jobseeker can correct, add or delete entries before pressing Calculate. Their
+reviewed version is written back through M-03-08 / M-03-09 — the same two
+documented methods the upload chain uses — so M-02-01 reads exactly what they
+approved. No Feature 3 file is modified. See TBD_and_Conflicts.md.
+
+MERGED (app_update.py -> app.py)
+================================
+The review-before-calculate flow from app_update.py is now in app.py,
+preserving what app.py already had that app_update.py dropped:
+- st.secrets -> os.environ mirroring (Streamlit Community Cloud has no .env)
+- cv_analysis scoring panel (render_cv_analysis, shown after Calculate so it
+  reflects the reviewed data)
+- M-02-41 display_upload_notification (SRS-050), kept as a testable function
+  and called from the persistent upload-success path
 """
 
 import json
 import os
 import re
 
+import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -403,6 +423,177 @@ def display_upload_notification(filename):
     st.success(f"✅ Upload successful: {filename}")
 
 
+# ---------------------------------------------------------------------
+# Review before calculating
+# ---------------------------------------------------------------------
+
+# The fields each category is edited on — the shapes the extraction prompt
+# asks for and UC-006's input specification lists. Any other key already on a
+# stored entry (a work-experience "description", say) is carried through
+# untouched rather than dropped; it is just not shown.
+_EDITOR_COLUMNS = {
+    "skills": ["skill_name", "proficiency_level"],
+    "education": ["institution", "degree", "start_year", "end_year"],
+    "work_experience": ["company", "position", "start_date", "end_date"],
+}
+_PROFICIENCY_LEVELS = ["beginner", "intermediate", "advanced", "expert"]
+_YEAR_FIELDS = ("start_year", "end_year")
+_YEAR_PATTERN = r"^(19|20)\d{2}$"
+
+
+def _editor_config(category):
+    """Column labels and per-cell rules for one category's table."""
+    text = st.column_config.TextColumn
+    if category == "skills":
+        return {
+            "skill_name": text("Skill", required=True, max_chars=100),
+            "proficiency_level": st.column_config.SelectboxColumn(
+                "Proficiency (optional)", options=_PROFICIENCY_LEVELS),
+        }
+    if category == "education":
+        return {
+            "institution": text("Institution"),
+            "degree": text("Degree", help="Include the field of study, e.g. "
+                                          "Bachelor of Science in Computer Science"),
+            "start_year": text("Start year", validate=_YEAR_PATTERN),
+            "end_year": text("End year", validate=_YEAR_PATTERN),
+        }
+    return {
+        "company": text("Company", required=True),
+        "position": text("Position", max_chars=100),
+        "start_date": text("Start", help='e.g. "2022" or "Jan 2022"'),
+        "end_date": text("End", help='e.g. "2025", or "Present" if ongoing'),
+    }
+
+
+def _review_frames(info):
+    """
+    Turns what M-03-10 returned into one table per category.
+
+    Every shown column is text: years arrive from the AI as integers but may
+    be null, and a numeric column would turn a missing year into NaN and a
+    present one into 2019.0. They are converted back on the way out.
+    """
+    frames = {}
+    for category, columns in _EDITOR_COLUMNS.items():
+        entries = info.get(category) or []
+        if category == "work_experience" and not entries:
+            entries = info.get("workExperience") or []
+        rows = []
+        for entry in entries:
+            if isinstance(entry, dict):
+                row = dict(entry)
+            elif category == "skills":
+                row = {"skill_name": str(entry)}   # older string-only records
+            else:
+                continue
+            for column in columns:
+                value = row.get(column)
+                row[column] = None if value is None else str(value)
+            if category == "skills" and row.get("proficiency_level"):
+                row["proficiency_level"] = row["proficiency_level"].strip().lower()
+            rows.append(row)
+        extras = sorted({k for r in rows for k in r} - set(columns))
+        frame = pd.DataFrame(rows, columns=columns + extras, dtype="object")
+        frames[category] = frame.astype("object").where(frame.notna(), None)
+    return frames
+
+
+def _clean_value(value):
+    """NaN and blank become None; numpy scalars become plain Python."""
+    if value is None:
+        return None
+    if isinstance(value, float) and value != value:
+        return None
+    if hasattr(value, "item") and not isinstance(value, (str, bytes)):
+        value = value.item()
+    if isinstance(value, str):
+        value = value.strip()
+        return value or None
+    return value
+
+
+def _rows_from_frame(frame, category):
+    """
+    The edited table back as the list[dict] AIExtractionResult declares.
+
+    Rows the Jobseeker added but left empty are dropped, as are skills with no
+    name — M-02-03 compares on skill_name, so a nameless skill can only ever
+    fail to match. Four-digit years go back to integers, the type the
+    extraction step stores, so an edited record looks like an extracted one.
+    """
+    columns = _EDITOR_COLUMNS[category]
+    rows = []
+    for record in frame.to_dict("records"):
+        row = {key: _clean_value(value) for key, value in record.items()}
+        if not any(row.get(column) for column in columns):
+            continue
+        if category == "skills" and not row.get("skill_name"):
+            continue
+        for field in _YEAR_FIELDS:
+            if isinstance(row.get(field), str) and re.fullmatch(_YEAR_PATTERN, row[field]):
+                row[field] = int(row[field])
+        rows.append(row)
+    return rows
+
+
+def render_cv_editor(cv_file_id, seed):
+    """
+    Draws the extracted CV information as three editable tables and returns
+    what they currently hold, as {"skills": [...], "education": [...],
+    "work_experience": [...]}.
+
+    `seed` must be the same frames on every rerun of one CV: st.data_editor
+    keeps the Jobseeker's edits as changes against the data it was first
+    given, so feeding it its own output back would apply them twice.
+    """
+    st.markdown("## 📋 Your CV Information")
+    st.caption(
+        "Check what we read from your CV. Click a cell to change it, use the "
+        "＋ below a table to add a row, or tick a row's checkbox and press the "
+        "bin icon to delete it. Nothing is matched until you press Calculate."
+    )
+    reviewed = {}
+    for category, title in (("skills", "🛠️ Skills"),
+                            ("education", "🎓 Education"),
+                            ("work_experience", "💼 Work Experience")):
+        st.markdown(f"### {title}")
+        edited = st.data_editor(
+            seed[category],
+            key=f"review_{category}_{cv_file_id}",
+            num_rows="dynamic",
+            hide_index=True,
+            column_order=_EDITOR_COLUMNS[category],
+            column_config=_editor_config(category),
+        )
+        reviewed[category] = _rows_from_frame(
+            edited if edited is not None else seed[category], category)
+    return reviewed
+
+
+def _save_reviewed_cv(cv_file_id, reviewed):
+    """
+    Stores the Jobseeker's reviewed CV information in place of the extracted
+    version, through the same documented methods the upload chain uses.
+
+    Throws:
+        NoExtractionResultException — every category is empty (M-03-08).
+        cv_upload.DatabaseException — cvs.json could not be written (M-03-09).
+    """
+    result = AIExtractionResult(
+        skills=reviewed["skills"],
+        education=reviewed["education"],
+        workExperience=reviewed["work_experience"],
+    )
+    cv_upload.validateExtractionResult(result)          # M-03-08
+    cv_upload.storeExtractedCVInfo(cv_file_id, result)  # M-03-09
+
+
+def _snapshot(reviewed):
+    """A comparable fingerprint of the tables, to tell whether results are stale."""
+    return json.dumps(reviewed, sort_keys=True, default=str)
+
+
 def _show_matching_error(exception):
     """
     Shows M-02-12's user-facing message, with the underlying cause tucked
@@ -564,50 +755,67 @@ uploaded_file = st.file_uploader(
 )
 
 if uploaded_file:
+    # Streamlit reruns this whole script on every click, and the uploader
+    # keeps handing back the same file each time. Without this check every
+    # edit in the review tables below re-ran extraction — a fresh AI call and
+    # a new CV record — throwing the Jobseeker's changes away, and "Use" on a
+    # stored CV was overridden by the file still sitting in the uploader.
+    upload_key = getattr(uploaded_file, "file_id", None) or (
+        f"{uploaded_file.name}:{getattr(uploaded_file, 'size', '')}")
+    processed = st.session_state.get("processed_upload") or {}
     st.markdown(
         f'<div class="card">📎 Selected file: <strong>{uploaded_file.name}</strong></div>',
         unsafe_allow_html=True,
     )
-    with st.spinner("🔍 Validating, protecting and parsing your CV..."):
-        try:
-            cv_file_id, masked_fields = process_cv(uploaded_file)
-            st.session_state["cv_file_id"] = cv_file_id
-            st.session_state["masked_fields"] = masked_fields
-            display_upload_notification(uploaded_file.name)
-        except UnreadablePDFException:
-            st.error(
-                "❌ We could not read any text from this PDF. It looks like an "
-                "image rather than a text document — CVs exported flat from "
-                "design tools (Canva, Figma, Illustrator) often are."
-            )
-            st.info(
-                "**What to try**\n\n"
-                "- Open the PDF and try selecting text with your cursor. If "
-                "nothing highlights, there is no text layer.\n"
-                "- Re-export from the original editor as a normal PDF rather "
-                "than an image or flattened export.\n"
-                "- Print or export to PDF from Word or Google Docs instead.\n"
-                "- If the original is only available as a scan, run OCR on it "
-                "first."
-            )
-            st.stop()
-        except CVUploadException as ex:
-            # M-03-03 for upload failures, M-03-15 for protection/AI failures.
-            upload_errors = (
-                cv_upload.InvalidFileFormatException,
-                cv_upload.FileSizeExceededException,
-                cv_upload.CorruptedFileException,
-                cv_upload.StorageException,
-            )
-            if isinstance(ex, upload_errors):
-                message = cv_upload.handleUploadError(ex)
-            else:
-                message = embed.handleProtectionError(ex)
-            st.error(f"❌ {message}")
-            st.stop()
-        except Exception as ex:
-            st.error(f"❌ {embed.handleProtectionError(ex)}")
-            st.stop()
+    if processed.get("key") != upload_key:
+        with st.spinner("🔍 Validating, protecting and parsing your CV..."):
+            try:
+                cv_file_id, masked_fields = process_cv(uploaded_file)
+                st.session_state["cv_file_id"] = cv_file_id
+                st.session_state["masked_fields"] = masked_fields
+                st.session_state["processed_upload"] = {
+                    "key": upload_key, "cv_file_id": cv_file_id}
+            except UnreadablePDFException:
+                st.error(
+                    "❌ We could not read any text from this PDF. It looks like an "
+                    "image rather than a text document — CVs exported flat from "
+                    "design tools (Canva, Figma, Illustrator) often are."
+                )
+                st.info(
+                    "**What to try**\n\n"
+                    "- Open the PDF and try selecting text with your cursor. If "
+                    "nothing highlights, there is no text layer.\n"
+                    "- Re-export from the original editor as a normal PDF rather "
+                    "than an image or flattened export.\n"
+                    "- Print or export to PDF from Word or Google Docs instead.\n"
+                    "- If the original is only available as a scan, run OCR on it "
+                    "first."
+                )
+                st.stop()
+            except CVUploadException as ex:
+                # M-03-03 for upload failures, M-03-15 for protection/AI failures.
+                upload_errors = (
+                    cv_upload.InvalidFileFormatException,
+                    cv_upload.FileSizeExceededException,
+                    cv_upload.CorruptedFileException,
+                    cv_upload.StorageException,
+                )
+                if isinstance(ex, upload_errors):
+                    message = cv_upload.handleUploadError(ex)
+                else:
+                    message = embed.handleProtectionError(ex)
+                st.error(f"❌ {message}")
+                st.stop()
+            except Exception as ex:
+                st.error(f"❌ {embed.handleProtectionError(ex)}")
+                st.stop()
+
+    # SRS-050 / M-02-41. Shown while the upload is the CV in use, not only on
+    # the run that processed it, so it does not vanish at the first edit.
+    processed = st.session_state.get("processed_upload") or {}
+    if processed.get("key") == upload_key and \
+            st.session_state.get("cv_file_id") == processed.get("cv_file_id"):
+        display_upload_notification(uploaded_file.name)
 
 cv_file_id = st.session_state.get("cv_file_id")
 
@@ -621,39 +829,78 @@ if cv_file_id:
             unsafe_allow_html=True,
         )
 
-    # Backstop. The picker no longer offers unparsed CVs, but a session that
-    # was open across the fix — or a CV deleted from cvs.json — can still hold
-    # an id M-03-10 cannot answer for. Clear it and ask for a fresh upload
-    # rather than letting the exception reach Streamlit as a traceback.
-    try:
-        cv_skills = render_extracted_info(cv_file_id)
-    except Exception:
-        st.session_state["cv_file_id"] = None
-        st.warning(
-            "That CV has no parsed data — it may have failed to read when it "
-            "was uploaded. Please upload it again."
-        )
-        st.stop()
-
-    render_cv_analysis(cv_file_id)
-
-    # M-02-01 — UC-006 Step 1. The matching side reads the CV through Feature
-    # 2's own entry point rather than reusing what M-03-10 returned for
-    # display: the two happen to agree today, but M-02-01 is where SRS-061's
-    # "please re-upload your CV" is raised if the stored data is unusable, and
-    # that check belongs before matching starts rather than after. The return
-    # value is no longer read here — the call is made for that check alone.
-    try:
-        match_controller.retrieve_cv_data(cv_file_id)
-    except Exception as ex:
-        _show_matching_error(ex)
-        st.stop()
-
-    with st.spinner("🎯 Matching you against available jobs..."):
+    # Load the tables once per CV. Reloading on every rerun would reset the
+    # Jobseeker's unsaved edits; loading again when the CV changes (a new
+    # upload, or "Use" on a stored one) is what shows the new CV's data.
+    if st.session_state.get("review_cv_id") != cv_file_id:
+        # Backstop. The picker no longer offers unparsed CVs, but a session
+        # that was open across the fix — or a CV deleted from cvs.json — can
+        # still hold an id M-03-10 cannot answer for. Clear it and ask for a
+        # fresh upload rather than letting the exception reach Streamlit as a
+        # traceback.
         try:
-            match_controller.generate_job_matches(cv_file_id)
+            info = embed.displayExtractedCVInfo(cv_file_id)   # M-03-10
+        except Exception:
+            st.session_state["cv_file_id"] = None
+            st.warning(
+                "That CV has no parsed data — it may have failed to read when it "
+                "was uploaded. Please upload it again."
+            )
+            st.stop()
+        st.session_state["review_cv_id"] = cv_file_id
+        st.session_state["review_seed"] = _review_frames(info)
+        st.session_state["calculated"] = None
+
+    reviewed = render_cv_editor(cv_file_id, st.session_state["review_seed"])
+
+    if st.button("🧮 Calculate", type="primary", key=f"calculate_{cv_file_id}"):
+        # Save first, so M-02-01 below reads what the Jobseeker approved.
+        try:
+            _save_reviewed_cv(cv_file_id, reviewed)
+        except cv_upload.NoExtractionResultException:
+            st.error("❌ Add at least one skill, education or work experience "
+                     "entry before calculating.")
+            st.stop()
+        except Exception as ex:
+            st.error("❌ Your changes could not be saved, so matching was not "
+                     "started. Please try again.")
+            with st.expander("Details (for whoever is running this)"):
+                st.code(f"{type(ex).__name__}: {ex}", language="text")
+            st.stop()
+
+        # M-02-01 — UC-006 Step 1. The matching side reads the CV through
+        # Feature 2's own entry point rather than reusing the tables above:
+        # M-02-01 is where SRS-061's "please re-upload your CV" is raised if
+        # the stored data is unusable, and that check belongs before matching
+        # starts rather than after. The return value is not read here — the
+        # call is made for that check alone.
+        try:
+            match_controller.retrieve_cv_data(cv_file_id)
         except Exception as ex:
             _show_matching_error(ex)
             st.stop()
 
-    render_matches(cv_file_id)
+        with st.spinner("🎯 Matching you against available jobs..."):
+            try:
+                match_controller.generate_job_matches(cv_file_id)
+            except Exception as ex:
+                _show_matching_error(ex)
+                st.stop()
+
+        st.session_state["calculated"] = {
+            "cv_file_id": cv_file_id, "snapshot": _snapshot(reviewed)}
+
+    # Results are shown only for the tables as they were when Calculate was
+    # pressed. After a further edit they no longer describe what is on screen,
+    # so they are withheld until the Jobseeker recalculates.
+    calculated = st.session_state.get("calculated") or {}
+    if calculated.get("cv_file_id") != cv_file_id:
+        st.info("Check your CV information above — add anything missing and "
+                "delete anything wrong — then press **Calculate** to see your "
+                "job matches.")
+    elif calculated.get("snapshot") != _snapshot(reviewed):
+        st.warning("You've changed your CV information since the last "
+                   "calculation. Press **Calculate** to update your matches.")
+    else:
+        render_cv_analysis(cv_file_id)
+        render_matches(cv_file_id)
