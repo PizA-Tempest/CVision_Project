@@ -116,6 +116,9 @@ from cv_analysis import CVAnalysisResult, analyzeCV, handleAnalysisError
 import cv_data_adapter
 import match_controller
 
+# Feature 5 (Authentication)
+import auth_service
+
 st.set_page_config(page_title="CVision", page_icon="📄", layout="wide")
 
 # A PDF whose text layer yields less than this is treated as unreadable
@@ -138,11 +141,21 @@ class UnreadablePDFException(Exception):
     """
 
 
-# Stand-in until Feature 5 (Authentication) supplies a real identity. Every
-# upload is attributed to this id, and it is what the "My CVs" picker filters
-# on — so today that picker shows every guest's uploads. Feature 5 replaces
-# this with the signed-in Jobseeker.
-JOBSEEKER_ID = "John Doe"
+# Feature 5 (Authentication): the signed-in Jobseeker's id. Guests have
+# None — uploads are rejected server-side (SRS-073) and "My CVs" is
+# filtered to this id (SRS-068, SRS-074).
+try:
+    auth_service.ensure_auth_tables()
+except Exception:
+    pass  # DB errors surface at login/register, not at page load
+
+
+def _current_jobseeker_id():
+    return st.session_state.get("jobseeker_id")
+
+
+def _current_jobseeker_name():
+    return st.session_state.get("jobseeker_name")
 
 st.markdown("""
 <style>
@@ -278,15 +291,21 @@ CV text:
 # The Feature 3 chain
 # ---------------------------------------------------------------------
 
-def process_cv(uploaded_file):
+def process_cv(uploaded_file, jobseeker_id=None):
     """
     Runs the documented CV chain and returns (cv_file_id, masked_summary).
 
     Raises whatever the approved methods raise; the caller maps it to a
     message with M-03-03 handleUploadError or M-03-15 handleProtectionError.
+    Raises UnauthenticatedUploadException when no Jobseeker is signed in
+    (SRS-073) — enforced here so a request that bypasses the UI is still
+    rejected, regardless of what the interface displayed.
     """
+    # SRS-073 — server-side guard, independent of the UI redirect.
+    jobseeker_id = jobseeker_id or _current_jobseeker_id()
+    auth_service.require_jobseeker(jobseeker_id)
     # M-03-01 -> M-03-04 validateCVFile, M-03-05 storeCVFile
-    upload = cv_upload.uploadCVFile(uploaded_file, JOBSEEKER_ID)
+    upload = cv_upload.uploadCVFile(uploaded_file, jobseeker_id)
     cv_file_id = upload["cvFileId"]
 
     # M-03-02 — prints to the console; the visible feedback is rendered by the
@@ -295,7 +314,7 @@ def process_cv(uploaded_file):
 
     # Feature 2/5 ownership index. Best-effort: never blocks the upload.
     cv_data_adapter.record_cv_ownership(
-        JOBSEEKER_ID, cv_file_id, upload.get("fileName")
+        jobseeker_id, cv_file_id, upload.get("fileName")
     )
 
     # M-03-06
@@ -714,18 +733,293 @@ def render_cv_analysis(cv_file_id):
 # Page
 # ---------------------------------------------------------------------
 
-st.markdown('<div class="title">📄 CVision</div>', unsafe_allow_html=True)
+for _key, _default in [
+    ("cv_file_id", None),
+    ("jobseeker_id", None),
+    ("jobseeker_name", ""),
+    ("jobseeker_email", ""),
+    ("auth_popup", None),  # None | "login" | "register" | "upload"
+]:
+    if _key not in st.session_state:
+        st.session_state[_key] = _default
+
+
+def _login_success(user):
+    st.session_state["jobseeker_id"] = user["id"]
+    st.session_state["jobseeker_name"] = user["username"]
+    st.session_state["jobseeker_email"] = user["email"]
+    for _k in ("cv_file_id", "review_cv_id", "review_seed",
+               "calculated", "masked_fields", "processed_upload",
+               "auth_shown_for", "top_forgot_mode", "dlg_forgot_mode"):
+        st.session_state.pop(_k, None)
+    st.session_state["auth_popup"] = None
+
+
+def _logout():
+    # SRS-076 — end the session and clear session state.
+    for _k in ("jobseeker_id", "jobseeker_name", "jobseeker_email",
+               "cv_file_id", "review_cv_id", "review_seed",
+               "calculated", "masked_fields", "processed_upload",
+               "auth_popup", "auth_shown_for",
+               "top_forgot_mode", "dlg_forgot_mode"):
+        st.session_state.pop(_k, None)
+
+
+def _render_login_form(prefix):
+    # Forgot-password link swaps this same popup to the reset form
+    # (no nested dialog). "Back to Log In" swaps back.
+    if st.session_state.get(prefix + "_forgot_mode"):
+        _render_forgot_form(prefix)
+        # No st.rerun() here: the click already reruns, and an explicit
+        # rerun would dismiss the popup.
+        if st.button("← Back to Log In", key=f"{prefix}_back_to_login",
+                     type="tertiary"):
+            st.session_state[prefix + "_forgot_mode"] = False
+        return
+    # SRS-064 — one field accepts a username OR an email address.
+    with st.form(f"{prefix}_login_form"):
+        _identifier = st.text_input("Username or email", key=f"{prefix}_identifier")
+        _password = st.text_input("Password", type="password", key=f"{prefix}_password")
+        _login_go = st.form_submit_button("Log In", type="primary")
+    if _login_go:
+        try:
+            _user = auth_service.authenticate_jobseeker(_identifier, _password)
+        except Exception as ex:
+            st.error(f"❌ Login failed: {type(ex).__name__}: {ex}")
+            _user = None
+        if _user:
+            _login_success(_user)
+            st.success(f"✅ Welcome back, {_user['username']}!")
+            st.rerun()
+            return
+        # Same login box also accepts administrator credentials: on a
+        # match the admin session is established and the app routes to
+        # the admin page. (Deviates from SRS-065's separate form per
+        # owner request — jobseeker and admin checks stay independent.)
+        try:
+            _admin = auth_service.authenticate_admin(_identifier, _password)
+        except Exception:
+            _admin = None
+        if _admin:
+            st.session_state["admin_authenticated"] = True
+            st.session_state["admin_user"] = _admin["username"]
+            try:
+                import log_service
+                log_service.set_current_user(_admin.get("id") or _admin["username"])
+            except Exception:
+                pass
+            st.session_state["auth_popup"] = None
+            st.success(f"✅ Welcome, {_admin['username']} — opening admin panel...")
+            st.query_params["page"] = "admin"
+            st.rerun()
+        else:
+            # Exception flow E9 — no match or wrong password.
+            st.error("❌ Invalid username/email or password.")
+    # No st.rerun() here either: it would dismiss the popup instead of
+    # swapping it to the reset form.
+    if st.button("Forgot password?", key=f"{prefix}_forgot_link",
+                 type="tertiary"):
+        st.session_state[prefix + "_forgot_mode"] = True
+
+
+def _render_forgot_form(prefix):
+    """Reset without an email server: username + email must both match
+    the same account, then a new password is set (stored as salted hash)."""
+    with st.form(f"{prefix}_forgot_form"):
+        _f_user = st.text_input("Username", key=f"{prefix}_f_user")
+        _f_email = st.text_input("Account email", key=f"{prefix}_f_email")
+        _f_new = st.text_input("New password", type="password",
+                               key=f"{prefix}_f_new")
+        _f_new2 = st.text_input("Confirm new password", type="password",
+                                key=f"{prefix}_f_new2")
+        _f_go = st.form_submit_button("Reset password")
+    if _f_go:
+        if _f_new != _f_new2:
+            st.error("❌ New passwords do not match.")
+        else:
+            try:
+                _u = auth_service.reset_jobseeker_password(_f_user, _f_email, _f_new)
+                st.success(f"✅ Password reset — log in as {_u['username']}.")
+            except auth_service.AuthValidationException as ex:
+                st.error(f"❌ {ex}")
+            except Exception as ex:
+                st.error(f"❌ Reset failed: {type(ex).__name__}: {ex}")
+
+
+@st.dialog("🔑 Change password", width="small")
+def _change_password_dialog():
+    with st.form("change_pw_form"):
+        _c_cur = st.text_input("Current password", type="password")
+        _c_new = st.text_input("New password", type="password",
+                               help="At least 6 characters.")
+        _c_new2 = st.text_input("Confirm new password", type="password")
+        _c_go = st.form_submit_button("Change password", type="primary")
+    if _c_go:
+        if _c_new != _c_new2:
+            st.error("❌ New passwords do not match.")
+        else:
+            try:
+                auth_service.change_jobseeker_password(
+                    _current_jobseeker_id(), _c_cur, _c_new)
+                st.success("✅ Password changed.")
+            except auth_service.AuthValidationException as ex:
+                st.error(f"❌ {ex}")
+            except Exception as ex:
+                st.error(f"❌ Change failed: {type(ex).__name__}: {ex}")
+
+
+def _render_register_form(prefix):
+    with st.form(f"{prefix}_register_form"):
+        _r_user = st.text_input("Username", key=f"{prefix}_r_user",
+                                help="3-30 characters: letters, digits, _ . -")
+        _r_email = st.text_input("Email", key=f"{prefix}_r_email")
+        _r_pw = st.text_input("Password", type="password", key=f"{prefix}_r_pw",
+                              help="At least 6 characters. Stored as a salted hash.")
+        _r_pw2 = st.text_input("Confirm password", type="password",
+                               key=f"{prefix}_r_pw2")
+        _reg_go = st.form_submit_button("Register", type="primary")
+    # SRS-063 — inline duplicate warning without submitting: Streamlit
+    # reruns on every keystroke, so this shows as soon as the value
+    # matches an existing account, before the form is submitted.
+    try:
+        if _r_user and auth_service.is_username_taken(_r_user):
+            st.error("That username is already registered.")
+        if _r_email and auth_service.is_email_taken(_r_email):
+            st.error("That email is already registered.")
+    except Exception:
+        pass
+    if _reg_go:
+        if _r_pw != _r_pw2:
+            st.error("❌ Passwords do not match.")
+        else:
+            try:
+                _new = auth_service.register_jobseeker(_r_user, _r_email, _r_pw)
+                _login_success(_new)
+                st.success(f"✅ Account created — welcome, {_new['username']}!")
+                st.rerun()
+            except (auth_service.UsernameTakenException,
+                    auth_service.EmailTakenException,
+                    auth_service.AuthValidationException) as ex:
+                st.error(f"❌ {ex}")
+            except Exception as ex:
+                st.error(f"❌ Registration failed: {type(ex).__name__}: {ex}")
+
+
+@st.dialog("🔐 Log in to continue", width="small")
+def _auth_dialog():
+    """Popup for guests: login / signup tabs (SRS-066, SRS-067)."""
+    st.caption("Log in or create an account to upload your CV.")
+    _t_login, _t_register = st.tabs(["🔑 Log In", "📝 Register"])
+    with _t_login:
+        _render_login_form("dlg")
+    with _t_register:
+        _render_register_form("dlg")
+
+
+@st.dialog("🔑 Log In", width="small")
+def _login_dialog():
+    _render_login_form("top")
+
+
+@st.dialog("📝 Register", width="small")
+def _register_dialog():
+    _render_register_form("top")
+
+
+# ---------------------------------------------------------------------
+# Header — mockup: 📄 CVision (indigo) left, Login (outline) + Sign In
+# (red) right, gray subtitle below, default uploader beneath.
+# ---------------------------------------------------------------------
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+.title {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 36px !important;
+    font-weight: 700 !important;
+    color: #4b4bf7 !important;
+    letter-spacing: -0.5px;
+}
+.subtitle {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 16px !important;
+    color: #6b7280 !important;
+}
+div[data-testid="stButton"] > button {
+    border-radius: 6px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    padding: 0.5rem 1rem !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+}
+div[data-testid="stButton"] > button[kind="secondary"] {
+    background: white !important;
+    border: 1px solid #d1d5db !important;
+    color: #374151 !important;
+}
+div[data-testid="stButton"] > button[kind="secondary"]:hover {
+    border-color: #ff4b4b !important;
+    color: #ff4b4b !important;
+}
+div[data-testid="stButton"] > button[kind="primary"] {
+    background: #ff4b4b !important;
+    border: 1px solid #ff4b4b !important;
+    color: white !important;
+}
+div[data-testid="stButton"] > button[kind="primary"]:hover {
+    background: #ff3333 !important;
+    border-color: #ff3333 !important;
+}
+/* Hide the browser's native password reveal/clear icons (Edge/Chrome)
+   so only Streamlit's own eye toggle shows — no doubled eye. */
+input::-ms-reveal, input::-ms-clear { display: none !important; }
+input::-webkit-credentials-auto-fill-button { visibility: hidden; }
+input::-webkit-textfield-decoration-container { visibility: hidden; }
+</style>
+""", unsafe_allow_html=True)
+if _current_jobseeker_id():
+    _h_logo, _h_auth = st.columns([6, 4], vertical_alignment="center")
+    with _h_logo:
+        st.markdown('<div class="title">📄 CVision</div>', unsafe_allow_html=True)
+    with _h_auth:
+        _c_name, _c_pw, _c_out = st.columns([2, 1, 1], gap="small")
+        with _c_name:
+            st.markdown(f"👤 **{_current_jobseeker_name()}**")
+        with _c_pw:
+            if st.button("Password", key="jobseeker_pw_top",
+                         help="Change your password", use_container_width=True):
+                _change_password_dialog()
+        with _c_out:
+            if st.button("Log Out", key="jobseeker_logout_top",
+                         type="primary", use_container_width=True):
+                _logout()
+                st.rerun()
+else:
+    _h_logo, _h_auth = st.columns([8, 2], vertical_alignment="center")
+    with _h_logo:
+        st.markdown('<div class="title">📄 CVision</div>', unsafe_allow_html=True)
+    with _h_auth:
+        _c_in, _c_up = st.columns(2, gap="small")
+        with _c_in:
+            if st.button("Login", key="jobseeker_login_top",
+                         use_container_width=True):
+                _login_dialog()
+        with _c_up:
+            if st.button("Sign In", key="jobseeker_register_top",
+                         type="primary", use_container_width=True):
+                _register_dialog()
 st.markdown('<div class="subtitle">Upload your CV and discover your best job matches 🚀</div>',
             unsafe_allow_html=True)
 st.markdown("")
 
-if "cv_file_id" not in st.session_state:
-    st.session_state["cv_file_id"] = None
-
-# "My CVs" — reads the jobseeker_cv index. Until Feature 5 exists every upload
-# carries the same stand-in id, so this lists all guest uploads rather than
-# one person's. The table and the query are in place for Feature 5 to inherit.
-previous = cv_data_adapter.list_cv_ids_for(JOBSEEKER_ID)
+# ---------------------------------------------------------------------
+# "My CVs" (SRS-068, SRS-074) — only the signed-in Jobseeker's own CVs.
+# ---------------------------------------------------------------------
+if _current_jobseeker_id():
+    previous = cv_data_adapter.list_cv_ids_for(_current_jobseeker_id())
+else:
+    previous = []
 
 # Only offer CVs that actually parsed. A failed extraction still leaves a
 # registry row and a jobseeker_cv row behind, because M-03-05 storeCVFile and
@@ -735,24 +1029,59 @@ previous = cv_data_adapter.list_cv_ids_for(JOBSEEKER_ID)
 # catch it.
 previous = [row for row in previous if _has_extracted_data(row.get("cv_id"))]
 
-if previous:
-    with st.expander(f"📁 My CVs ({len(previous)})"):
-        st.caption(
-            "Uploaded previously. Until sign-in exists (Feature 5) these are "
-            "attributed to a shared guest identity."
-        )
-        for row in previous[:20]:
-            col_name, col_use = st.columns([5, 1])
-            col_name.write(f"{row.get('original_filename') or row['cv_id']}")
-            if col_use.button("Use", key=f"use_{row['cv_id']}"):
-                st.session_state["cv_file_id"] = row["cv_id"]
-                st.rerun()
+def _fmt_cv_date(value):
+    if not value:
+        return "—"
+    if hasattr(value, "strftime"):
+        return value.strftime("%Y-%m-%d %H:%M")
+    return str(value).replace("T", " ")[:16] or "—"
 
+
+if _current_jobseeker_id():
+    if previous:
+        with st.expander(f"📁 My CVs ({len(previous)})"):
+            for row in previous[:20]:
+                # One identical bordered card per CV: same shape and
+                # spacing for every row, so the list reads symmetric.
+                with st.container(border=True):
+                    # Narrow action column + full-width button: every Use
+                    # sits in the same spot and stays compact.
+                    _cc1, _cc2, _cc3 = st.columns(
+                        [4, 2.6, 1.2], vertical_alignment="center")
+                    with _cc1:
+                        st.markdown(
+                            f"📄 {(row.get('original_filename') or row['cv_id'])}")
+                    with _cc2:
+                        st.caption(_fmt_cv_date(row.get("uploaded_at")))
+                    with _cc3:
+                        if st.button("Use", key=f"use_{row['cv_id']}",
+                                     use_container_width=True):
+                            st.session_state["cv_file_id"] = row["cv_id"]
+                            st.rerun()
+
+# ---------------------------------------------------------------------
+# Upload section (SRS-067): identical widget for everyone. A guest picking
+# a file gets the login/register popup and the file is discarded, never
+# processed. process_cv() also rejects unauthenticated uploads (SRS-073).
+# ---------------------------------------------------------------------
 uploaded_file = st.file_uploader(
     "📤 Upload your CV (PDF)",
     type=["pdf"],
     help="Drag and drop your CV here, or click Browse files. PDF format, max 20 MB.",
 )
+if uploaded_file and not _current_jobseeker_id():
+    # Guest picked a file in the upload box -> login/register popup,
+    # file is discarded and never processed (SRS-067).
+    # NOTE (Streamlit limit): the file chooser itself always opens on
+    # click — there is no pre-chooser click event. The popup fires the
+    # moment a file is chosen. Shown once per pick so it does not loop.
+    _guest_key = getattr(uploaded_file, "file_id", None) or (
+        f"{uploaded_file.name}:{getattr(uploaded_file, 'size', '')}")
+    if st.session_state.get("auth_shown_for") != _guest_key:
+        st.session_state["auth_shown_for"] = _guest_key
+        _auth_dialog()
+    st.warning("🔐 Please log in or create an account to upload your CV.")
+    uploaded_file = None
 
 if uploaded_file:
     # Streamlit reruns this whole script on every click, and the uploader
@@ -770,7 +1099,8 @@ if uploaded_file:
     if processed.get("key") != upload_key:
         with st.spinner("🔍 Validating, protecting and parsing your CV..."):
             try:
-                cv_file_id, masked_fields = process_cv(uploaded_file)
+                cv_file_id, masked_fields = process_cv(
+                    uploaded_file, _current_jobseeker_id())
                 st.session_state["cv_file_id"] = cv_file_id
                 st.session_state["masked_fields"] = masked_fields
                 st.session_state["processed_upload"] = {
@@ -791,6 +1121,10 @@ if uploaded_file:
                     "- If the original is only available as a scan, run OCR on it "
                     "first."
                 )
+                st.stop()
+            except auth_service.UnauthenticatedUploadException:
+                # SRS-073 — UI was bypassed; reject at the server level.
+                st.error("🔐 Please log in or register before uploading a CV.")
                 st.stop()
             except CVUploadException as ex:
                 # M-03-03 for upload failures, M-03-15 for protection/AI failures.
@@ -818,6 +1152,28 @@ if uploaded_file:
         display_upload_notification(uploaded_file.name)
 
 cv_file_id = st.session_state.get("cv_file_id")
+
+# SRS-074 — a session holding another Jobseeker's CV id (stale session,
+# guessed id) must not render it. Ownership is checked against the
+# jobseeker_cv index with cvs.json as fallback.
+if cv_file_id and _current_jobseeker_id():
+    _owned = {r.get("cv_id") for r in previous}
+    if cv_file_id not in _owned:
+        try:
+            _rec = cv_data_adapter.get_cv_record(cv_file_id)
+            _owner = (_rec or {}).get("jobseekerId")
+        except Exception:
+            _owner = None
+        if _owner != _current_jobseeker_id():
+            st.session_state["cv_file_id"] = None
+            st.warning("That CV belongs to another account.")
+            st.stop()
+    cv_file_id = st.session_state.get("cv_file_id")
+
+if cv_file_id and not _current_jobseeker_id():
+    # Session survived a logout — clear it rather than showing data.
+    st.session_state["cv_file_id"] = None
+    cv_file_id = None
 
 if cv_file_id:
     masked_fields = st.session_state.get("masked_fields") or []

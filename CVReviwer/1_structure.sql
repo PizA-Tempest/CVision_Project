@@ -3,8 +3,9 @@
 --
 --   mysqlsh --sql -u root -p -h localhost --file 1_structure.sql
 --
--- Creates the database and all nine tables for Feature 1 (job fetching),
--- Feature 2 (job matching) and the Feature 5 groundwork. Inserts nothing:
+-- Creates the database and all ten tables for Feature 1 (job fetching),
+-- Feature 2 (job matching), Feature 5 (authentication) and the Feature 5
+-- groundwork. Inserts nothing:
 -- run 2_data.sql afterwards, or the app will have no admin account to log
 -- in with and no provider profile to create a scraper from.
 --
@@ -34,6 +35,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS job_match;
 DROP TABLE IF EXISTS job_enrichment;
 DROP TABLE IF EXISTS jobseeker_cv;
+DROP TABLE IF EXISTS jobseeker;
 DROP TABLE IF EXISTS log_entry;
 DROP TABLE IF EXISTS job_listing;
 DROP TABLE IF EXISTS schedule;
@@ -49,15 +51,29 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- =====================================================================
 
 -- Admin -----------------------------------------------------------------
--- The password column is plaintext because admin.py's login gate is an
--- acknowledged stand-in: authentication is Feature #5 and outside this
--- refactor. The seeded password below is "123" for local development.
--- Replace the column, the gate, and that password before this is
--- reachable by anyone else.
+-- Feature #5 (Authentication) stores a salted hash here (SRS-072):
+--   pbkdf2_sha256$<iterations>$<salt_hex>$<hash_hex>
+-- The seed in 2_data.sql is still legacy plaintext ("123") so a fresh
+-- install has a known login; auth_service.authenticate_admin() accepts it
+-- once and transparently upgrades the row to a hash.
 CREATE TABLE admin (
     id        VARCHAR(36)  NOT NULL PRIMARY KEY,
     username  VARCHAR(100) NOT NULL UNIQUE,
     password  VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+
+-- Jobseeker ---------------------------------------------------------------
+-- Feature #5 (Authentication). One row per registered account (URS-010).
+-- jobseeker_cv.jobseeker_id references this logically (no FK: legacy rows
+-- carry the "John Doe" stand-in and must keep loading). Passwords are
+-- salted hashes only, never plaintext (SRS-072).
+CREATE TABLE IF NOT EXISTS jobseeker (
+    id            VARCHAR(36)  NOT NULL PRIMARY KEY,
+    username      VARCHAR(100) NOT NULL UNIQUE,
+    email         VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at    DATETIME(3)  NULL
 ) ENGINE=InnoDB;
 
 

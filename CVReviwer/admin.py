@@ -28,15 +28,10 @@ no M-numbered method (or even an implied one) covering them:
     existing, but no M-numbered method implements it. See
     TBD_and_Conflicts.md.
   - Editing an existing scraper's name/description/raw request.
-  - Real authentication. Every SRS use case lists "The Admin is
-    authenticated and logged in" as a precondition, but authentication
-    itself belongs to "Feature #5: Authentication" — a separate
-    feature, not covered by any document handed to me for this
-    refactor. The login gate below is a minimal stand-in reading the
-    Data Dictionary's Admin table directly (plaintext comparison,
-    matching that table's own example data), just enough for this
-    file to run standalone. It should be replaced by whatever
-    Feature #5 actually specifies.
+   - Real authentication now lives in auth_service.py (Feature #5):
+     salted-hash verification (SRS-071/072) with transparent upgrade of
+     the legacy plaintext seed. The login gate below is that check.
+     Provider-profile creation/deletion remains out of scope (below).
 
 Two things WERE added, despite not being in the 32 methods, because
 their absence would be a real functional gap rather than a missing
@@ -142,13 +137,17 @@ def _format_timestamp(value, fmt="%Y-%m-%d %H:%M UTC"):
 
 
 def _authenticate(username, password):
-    """Minimal stand-in for Feature #5 (Authentication) — see the
-    module docstring. Plaintext comparison against the Admin table,
-    matching the Data Dictionary's own example data for that column."""
-    rows = db.query("SELECT id, username, password FROM admin WHERE username = %s", (username,))
-    if rows and rows[0].get("password") == password:
-        return rows[0]
-    return None
+    """Feature #5 (Authentication): salted-hash check via auth_service.
+
+    Separate from the Jobseeker login form by design (SRS-065, SRS-071);
+    legacy plaintext seeds are upgraded transparently on first login.
+    """
+    import auth_service
+    try:
+        auth_service.ensure_auth_tables()
+    except Exception:
+        pass
+    return auth_service.authenticate_admin(username, password)
 
 
 # ---------------------------------------------------------------------
@@ -761,7 +760,14 @@ def show_admin_page():
 
     # Login gate — see module docstring re: Feature #5 (Authentication)
     if not st.session_state["admin_authenticated"]:
+        st.markdown("""
+        <style>
+        input::-ms-reveal, input::-ms-clear { display: none !important; }
+        input::-webkit-credentials-auto-fill-button { visibility: hidden; }
+        </style>
+        """, unsafe_allow_html=True)
         st.markdown("## 🔐 Admin Login")
+        st.caption("Separate from the Jobseeker login (SRS-065). Default seed: admin / 123.")
         username = st.text_input("Username", key="admin_username_input")
         password = st.text_input("Password", type="password", key="admin_password_input")
         if st.button("Login"):
@@ -798,6 +804,15 @@ def show_admin_page():
         if st.button("Log Out", use_container_width=True):
             st.session_state["admin_authenticated"] = False
             st.session_state["admin_user"] = ""
+            # Return to the clean main-page URL on logout.
+            try:
+                if "page" in st.query_params:
+                    del st.query_params["page"]
+            except Exception:
+                try:
+                    st.query_params.clear()
+                except Exception:
+                    pass
             st.rerun()
 
     st.markdown("---")
