@@ -861,7 +861,10 @@ def _change_password_dialog():
             try:
                 auth_service.change_jobseeker_password(
                     _current_jobseeker_id(), _c_cur, _c_new)
-                st.success("✅ Password changed.")
+                # Close the popup: a @st.dialog only dismisses on rerun
+                # or manual X. Stash the message so it survives the rerun.
+                st.session_state["pw_changed_ok"] = True
+                st.rerun()
             except auth_service.AuthValidationException as ex:
                 st.error(f"❌ {ex}")
             except Exception as ex:
@@ -1012,6 +1015,12 @@ else:
 st.markdown('<div class="subtitle">Upload your CV and discover your best job matches 🚀</div>',
             unsafe_allow_html=True)
 st.markdown("")
+if st.session_state.pop("pw_changed_ok", False):
+    st.success("✅ Password changed.")
+    try:
+        st.toast("✅ Password changed.")
+    except Exception:
+        pass
 
 # ---------------------------------------------------------------------
 # "My CVs" (SRS-068, SRS-074) — only the signed-in Jobseeker's own CVs.
@@ -1041,23 +1050,29 @@ if _current_jobseeker_id():
     if previous:
         with st.expander(f"📁 My CVs ({len(previous)})"):
             for row in previous[:20]:
-                # One identical bordered card per CV: same shape and
-                # spacing for every row, so the list reads symmetric.
+                # One bordered card per CV. Columns keep filename, date,
+                # Use on ONE row even with long names (horizontal container
+                # wraps). Name truncates with ellipsis; date centered.
                 with st.container(border=True):
-                    # Narrow action column + full-width button: every Use
-                    # sits in the same spot and stays compact.
                     _cc1, _cc2, _cc3 = st.columns(
-                        [4, 2.6, 1.2], vertical_alignment="center")
+                        [4, 2.6, 1.2], vertical_alignment="center", gap=None)
                     with _cc1:
+                        _fname = row.get('original_filename') or row['cv_id']
                         st.markdown(
-                            f"📄 {(row.get('original_filename') or row['cv_id'])}")
+                            f"<div title='{ _fname }' style='white-space:nowrap;overflow:hidden;text-overflow:ellipsis'>📄 {_fname}</div>",
+                            unsafe_allow_html=True)
                     with _cc2:
-                        st.caption(_fmt_cv_date(row.get("uploaded_at")))
+                        st.markdown(
+                            f"<div style='color:#6b7280;font-size:13px;text-align:center;white-space:nowrap'>{_fmt_cv_date(row.get('uploaded_at'))}</div>",
+                            unsafe_allow_html=True)
                     with _cc3:
-                        if st.button("Use", key=f"use_{row['cv_id']}",
-                                     use_container_width=True):
-                            st.session_state["cv_file_id"] = row["cv_id"]
-                            st.rerun()
+                        with st.container(horizontal=True,
+                                           horizontal_alignment="right",
+                                           gap=None, border=False):
+                            if st.button("Use", key=f"use_{row['cv_id']}",
+                                         width=150):
+                                st.session_state["cv_file_id"] = row["cv_id"]
+                                st.rerun()
 
 # ---------------------------------------------------------------------
 # Upload section (SRS-067): identical widget for everyone. A guest picking
