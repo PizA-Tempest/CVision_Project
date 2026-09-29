@@ -828,17 +828,20 @@ def _pw_strength(password):
     return score, "Strong", "#16a34a"
 
 
+def _set_forgot_mode(prefix, value):
+    """Callback (runs before rerun) so 1 click swaps the form without st.rerun()."""
+    st.session_state[prefix + "_forgot_mode"] = value
+
+
 def _render_login_form(prefix):
     # Forgot-password link swaps this same popup to the reset form
     # (no nested dialog). "Back to Log In" swaps back.
     _inject_auth_css()
     if st.session_state.get(prefix + "_forgot_mode"):
         _render_forgot_form(prefix)
-        # No st.rerun() here: the click already reruns, and an explicit
-        # rerun would dismiss the popup.
-        if st.button("← Back to Log In", key=f"{prefix}_back_to_login",
-                     type="tertiary"):
-            st.session_state[prefix + "_forgot_mode"] = False
+        st.button("← Back to Log In", key=f"{prefix}_back_to_login",
+                  type="tertiary",
+                  on_click=_set_forgot_mode, args=(prefix, False))
         return
     _auth_brand("Welcome back", "Log in to access your CVs and job matches.")
     # SRS-064 — one field accepts a username OR an email address.
@@ -885,11 +888,11 @@ def _render_login_form(prefix):
             else:
                 # Exception flow E9 — no match or wrong password.
                 st.error("Invalid username/email or password.")
-    # No st.rerun() here either: it would dismiss the popup instead of
-    # swapping it to the reset form.
-    if st.button("Forgot password?", key=f"{prefix}_forgot_link",
-                 type="tertiary"):
-        st.session_state[prefix + "_forgot_mode"] = True
+    # on_click sets the flag before the rerun, so 1 click swaps the form.
+    # No st.rerun() here — it would dismiss the dialog popup.
+    st.button("Forgot password?", key=f"{prefix}_forgot_link",
+              type="tertiary",
+              on_click=_set_forgot_mode, args=(prefix, True))
     st.markdown('<div class="auth-footer">Go to the Register tab to create a free account.</div>',
                 unsafe_allow_html=True)
 
@@ -980,7 +983,7 @@ def _change_name_dialog():
 
 def _render_register_form(prefix):
     _inject_auth_css()
-    _auth_brand("Create your account", "Free forever. Your CVs stay private to you.")
+    _auth_brand("Create your account", "Create your profile and discover jobs that fit you.")
     with st.form(f"{prefix}_register_form"):
         _r_user = st.text_input("Username", key=f"{prefix}_r_user",
                                 placeholder="e.g. alice_j",
@@ -1028,8 +1031,7 @@ def _render_register_form(prefix):
                 st.error(f"{ex}")
             except Exception as ex:
                 st.error(f"Registration failed: {type(ex).__name__}: {ex}")
-    st.markdown('<div class="auth-terms">By creating an account you agree to keep your credentials private. '
-                'Passwords are stored as salted hashes, never plaintext.</div>',
+    st.markdown('<div class="auth-terms">By creating an account you agree to keep your credentials private.</div>',
                 unsafe_allow_html=True)
 
 
@@ -1258,17 +1260,54 @@ st.markdown('<div class="subtitle">Upload your CV and discover your best job mat
             unsafe_allow_html=True)
 st.markdown("")
 if st.session_state.pop("pw_changed_ok", False):
-    st.success("✅ Password changed.")
     try:
         st.toast("✅ Password changed.")
     except Exception:
         pass
+    # Non-blocking auto-dismiss (3s): pure CSS, no time.sleep.
+    st.markdown(
+        """<div class="auto-dismiss-pw">✅ Password changed.</div>
+        <style>
+        .auto-dismiss-pw {
+            background-color: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            animation: _pwHide 0.5s ease 3s forwards;
+        }
+        @keyframes _pwHide {
+            to { opacity: 0; visibility: hidden; height: 0; padding: 0; margin: 0; border: 0; }
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
 if st.session_state.pop("profile_changed_ok", False):
-    st.success("✅ Profile name updated.")
     try:
         st.toast("✅ Profile name updated.")
     except Exception:
         pass
+    # Non-blocking auto-dismiss (3s): pure CSS, no time.sleep, so the
+    # upload section below renders immediately instead of waiting.
+    st.markdown(
+        """<div class="auto-dismiss-profile">✅ Profile name updated.</div>
+        <style>
+        .auto-dismiss-profile {
+            background-color: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            animation: _profileHide 0.5s ease 3s forwards;
+        }
+        @keyframes _profileHide {
+            to { opacity: 0; visibility: hidden; height: 0; padding: 0; margin: 0; border: 0; }
+        }
+        </style>""",
+        unsafe_allow_html=True,
+    )
 
 # ---------------------------------------------------------------------
 # "My CVs" (SRS-068, SRS-074) — only the signed-in Jobseeker's own CVs.
@@ -1281,7 +1320,7 @@ else:
 # Only offer CVs that actually parsed. A failed extraction still leaves a
 # registry row and a jobseeker_cv row behind, because M-03-05 storeCVFile and
 # the ownership write both happen before extraction is attempted. Listing
-# those meant "Use" set cv_file_id directly, bypassing the upload handler's
+# those meant "View" set cv_file_id directly, bypassing the upload handler's
 # error path, and M-03-10 raised NoExtractionResultException with nothing to
 # catch it.
 previous = [row for row in previous if _has_extracted_data(row.get("cv_id"))]
@@ -1299,7 +1338,7 @@ if _current_jobseeker_id():
         with st.expander(f"📁 My CVs ({len(previous)})"):
             for row in previous[:20]:
                 # One bordered card per CV. Columns keep filename, date,
-                # Use on ONE row even with long names (horizontal container
+                # View on ONE row even with long names (horizontal container
                 # wraps). Name truncates with ellipsis; date centered.
                 with st.container(border=True):
                     _cc1, _cc2, _cc3 = st.columns(
@@ -1317,9 +1356,13 @@ if _current_jobseeker_id():
                         with st.container(horizontal=True,
                                            horizontal_alignment="right",
                                            gap=None, border=False):
-                            if st.button("Use", key=f"use_{row['cv_id']}",
+                            if st.button("View", key=f"view_{row['cv_id']}",
                                          width=150):
                                 st.session_state["cv_file_id"] = row["cv_id"]
+                                # Auto-show full results without pressing Calculate.
+                                st.session_state["auto_view_results"] = row["cv_id"]
+                                # View mode: hide the Calculate button (results only).
+                                st.session_state["view_mode"] = row["cv_id"]
                                 st.rerun()
 
 # ---------------------------------------------------------------------
@@ -1332,6 +1375,12 @@ uploaded_file = st.file_uploader(
     type=["pdf"],
     help="Drag and drop your CV here, or click Browse files. PDF format, max 20 MB.",
 )
+if not uploaded_file and st.session_state.get("processed_upload"):
+    # User clicked the X on the uploader -> reset to a fresh upload page.
+    for _k in ("cv_file_id", "review_cv_id", "review_seed",
+               "calculated", "masked_fields", "processed_upload",
+               "view_mode", "auto_view_results"):
+        st.session_state.pop(_k, None)
 if uploaded_file and not _current_jobseeker_id():
     # Guest picked a file in the upload box -> login/register popup,
     # file is discarded and never processed (SRS-067).
@@ -1350,7 +1399,7 @@ if uploaded_file:
     # Streamlit reruns this whole script on every click, and the uploader
     # keeps handing back the same file each time. Without this check every
     # edit in the review tables below re-ran extraction — a fresh AI call and
-    # a new CV record — throwing the Jobseeker's changes away, and "Use" on a
+    # a new CV record — throwing the Jobseeker's changes away, and "View" on a
     # stored CV was overridden by the file still sitting in the uploader.
     upload_key = getattr(uploaded_file, "file_id", None) or (
         f"{uploaded_file.name}:{getattr(uploaded_file, 'size', '')}")
@@ -1368,6 +1417,9 @@ if uploaded_file:
                 st.session_state["masked_fields"] = masked_fields
                 st.session_state["processed_upload"] = {
                     "key": upload_key, "cv_file_id": cv_file_id}
+                # Fresh upload -> leave view mode (Calculate button visible).
+                st.session_state.pop("view_mode", None)
+                st.session_state.pop("auto_view_results", None)
             except UnreadablePDFException:
                 st.error(
                     "❌ We could not read any text from this PDF. It looks like an "
@@ -1450,7 +1502,7 @@ if cv_file_id:
 
     # Load the tables once per CV. Reloading on every rerun would reset the
     # Jobseeker's unsaved edits; loading again when the CV changes (a new
-    # upload, or "Use" on a stored one) is what shows the new CV's data.
+    # upload, or "View" on a stored one) is what shows the new CV's data.
     if st.session_state.get("review_cv_id") != cv_file_id:
         # Backstop. The picker no longer offers unparsed CVs, but a session
         # that was open across the fix — or a CV deleted from cvs.json — can
@@ -1472,7 +1524,30 @@ if cv_file_id:
 
     reviewed = render_cv_editor(cv_file_id, st.session_state["review_seed"])
 
-    if st.button("🧮 Calculate", type="primary", key=f"calculate_{cv_file_id}"):
+    _auto_view = st.session_state.get("auto_view_results") == cv_file_id
+    _is_view_mode = st.session_state.get("view_mode") == cv_file_id
+    # In View mode the Calculate button is hidden (results only).
+    if _is_view_mode:
+        _calc_pressed = False
+    else:
+        _calc_pressed = st.button("🧮 Calculate", type="primary", key=f"calculate_{cv_file_id}")
+
+    if _auto_view and not _calc_pressed:
+        # "View" in My CVs: show full results without requiring Calculate.
+        # If matches were already stored, display them instantly.
+        # Otherwise run the normal calculation once, automatically.
+        try:
+            _stored = match_controller.display_job_match_results(cv_file_id)
+        except Exception:
+            _stored = []
+        if _stored:
+            st.session_state["calculated"] = {
+                "cv_file_id": cv_file_id, "snapshot": _snapshot(reviewed)}
+        else:
+            _calc_pressed = True
+        st.session_state.pop("auto_view_results", None)
+
+    if _calc_pressed:
         # Save first, so M-02-01 below reads what the Jobseeker approved.
         try:
             _save_reviewed_cv(cv_file_id, reviewed)
