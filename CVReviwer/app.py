@@ -765,9 +765,73 @@ def _logout():
         st.session_state.pop(_k, None)
 
 
+_AUTH_CSS = """
+<style>
+.auth-brand { text-align: center; margin-bottom: 6px; }
+.auth-logo {
+    width: 48px; height: 48px; margin: 0 auto 8px auto; border-radius: 14px;
+    background: linear-gradient(135deg, #4b4bf7, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: white;
+    box-shadow: 0 4px 12px rgba(75,75,247,0.35);
+}
+.auth-title { font-size: 22px; font-weight: 700; color: #111827; margin: 0; }
+.auth-sub { font-size: 14px; color: #6b7280; margin: 4px 0 12px 0; }
+.auth-divider {
+    display: flex; align-items: center; gap: 10px; margin: 14px 0 4px 0;
+    color: #9ca3af; font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after {
+    content: ""; flex: 1; height: 1px; background: #e5e7eb;
+}
+.auth-footer { text-align: center; font-size: 13px; color: #6b7280; margin-top: 10px; }
+.auth-terms { text-align: center; font-size: 12px; color: #9ca3af; margin-top: 10px; }
+.pw-meter { height: 6px; border-radius: 999px; background: #e5e7eb; overflow: hidden; margin: 6px 0 2px 0; }
+.pw-meter > div { height: 100%; border-radius: 999px; transition: width .2s; }
+.pw-label { font-size: 12px; margin-bottom: 6px; }
+div[data-testid="stDialog"] div[data-testid="stForm"] { border: 1px solid #e5e7eb; border-radius: 14px; padding: 16px; }
+div[data-testid="stDialog"] div[data-testid="stFormSubmitButton"] > button { width: 100%; border-radius: 10px !important; font-weight: 600 !important; }
+</style>
+"""
+
+def _inject_auth_css():
+    st.markdown(_AUTH_CSS, unsafe_allow_html=True)
+
+
+def _auth_brand(title, subtitle):
+    st.markdown(
+        f'<div class="auth-brand"><div class="auth-logo">📄</div>'
+        f'<p class="auth-title">{title}</p>'
+        f'<p class="auth-sub">{subtitle}</p></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _pw_strength(password):
+    """Simple 0-100 strength for the register meter (UI only, no policy change)."""
+    pw = password or ""
+    score = 0
+    if len(pw) >= 6:
+        score += 25
+    if len(pw) >= 10:
+        score += 25
+    if any(c.isupper() for c in pw) and any(c.islower() for c in pw):
+        score += 25
+    if any(c.isdigit() for c in pw) or any(not c.isalnum() for c in pw):
+        score += 25
+    if score <= 25:
+        return score or 5, "Weak", "#ef4444"
+    if score <= 50:
+        return score, "Okay", "#f59e0b"
+    if score <= 75:
+        return score, "Good", "#3b82f6"
+    return score, "Strong", "#16a34a"
+
+
 def _render_login_form(prefix):
     # Forgot-password link swaps this same popup to the reset form
     # (no nested dialog). "Back to Log In" swaps back.
+    _inject_auth_css()
     if st.session_state.get(prefix + "_forgot_mode"):
         _render_forgot_form(prefix)
         # No st.rerun() here: the click already reruns, and an explicit
@@ -776,87 +840,105 @@ def _render_login_form(prefix):
                      type="tertiary"):
             st.session_state[prefix + "_forgot_mode"] = False
         return
+    _auth_brand("Welcome back", "Log in to access your CVs and job matches.")
     # SRS-064 — one field accepts a username OR an email address.
     with st.form(f"{prefix}_login_form"):
-        _identifier = st.text_input("Username or email", key=f"{prefix}_identifier")
-        _password = st.text_input("Password", type="password", key=f"{prefix}_password")
+        _identifier = st.text_input("Username or email", key=f"{prefix}_identifier",
+                                    placeholder="you@example.com or username")
+        _password = st.text_input("Password", type="password", key=f"{prefix}_password",
+                                  placeholder="Enter your password")
         _login_go = st.form_submit_button("Log In", type="primary")
     if _login_go:
-        try:
-            _user = auth_service.authenticate_jobseeker(_identifier, _password)
-        except Exception as ex:
-            st.error(f"❌ Login failed: {type(ex).__name__}: {ex}")
-            _user = None
-        if _user:
-            _login_success(_user)
-            st.success(f"✅ Welcome back, {_user['username']}!")
-            st.rerun()
-            return
-        # Same login box also accepts administrator credentials: on a
-        # match the admin session is established and the app routes to
-        # the admin page. (Deviates from SRS-065's separate form per
-        # owner request — jobseeker and admin checks stay independent.)
-        try:
-            _admin = auth_service.authenticate_admin(_identifier, _password)
-        except Exception:
-            _admin = None
-        if _admin:
-            st.session_state["admin_authenticated"] = True
-            st.session_state["admin_user"] = _admin["username"]
-            try:
-                import log_service
-                log_service.set_current_user(_admin.get("id") or _admin["username"])
-            except Exception:
-                pass
-            st.session_state["auth_popup"] = None
-            st.success(f"✅ Welcome, {_admin['username']} — opening admin panel...")
-            st.query_params["page"] = "admin"
-            st.rerun()
+        if not (_identifier or "").strip() or not _password:
+            st.error("Enter your username/email and password.")
         else:
-            # Exception flow E9 — no match or wrong password.
-            st.error("❌ Invalid username/email or password.")
+            try:
+                _user = auth_service.authenticate_jobseeker(_identifier, _password)
+            except Exception as ex:
+                st.error(f"Login failed: {type(ex).__name__}: {ex}")
+                _user = None
+            if _user:
+                _login_success(_user)
+                st.success(f"Welcome back, {_user['username']}!")
+                st.rerun()
+                return
+            # Same login box also accepts administrator credentials: on a
+            # match the admin session is established and the app routes to
+            # the admin page. (Deviates from SRS-065's separate form per
+            # owner request — jobseeker and admin checks stay independent.)
+            try:
+                _admin = auth_service.authenticate_admin(_identifier, _password)
+            except Exception:
+                _admin = None
+            if _admin:
+                st.session_state["admin_authenticated"] = True
+                st.session_state["admin_user"] = _admin["username"]
+                try:
+                    import log_service
+                    log_service.set_current_user(_admin.get("id") or _admin["username"])
+                except Exception:
+                    pass
+                st.session_state["auth_popup"] = None
+                st.success(f"Welcome, {_admin['username']} — opening admin panel...")
+                st.query_params["page"] = "admin"
+                st.rerun()
+            else:
+                # Exception flow E9 — no match or wrong password.
+                st.error("Invalid username/email or password.")
     # No st.rerun() here either: it would dismiss the popup instead of
     # swapping it to the reset form.
     if st.button("Forgot password?", key=f"{prefix}_forgot_link",
                  type="tertiary"):
         st.session_state[prefix + "_forgot_mode"] = True
+    st.markdown('<div class="auth-footer">Go to the Register tab to create a free account.</div>',
+                unsafe_allow_html=True)
 
 
 def _render_forgot_form(prefix):
     """Reset without an email server: username + email must both match
     the same account, then a new password is set (stored as salted hash)."""
+    _inject_auth_css()
+    _auth_brand("Reset password", "Enter your account details to set a new password.")
     with st.form(f"{prefix}_forgot_form"):
-        _f_user = st.text_input("Username", key=f"{prefix}_f_user")
-        _f_email = st.text_input("Account email", key=f"{prefix}_f_email")
+        _f_user = st.text_input("Username", key=f"{prefix}_f_user",
+                                placeholder="Your username")
+        _f_email = st.text_input("Account email", key=f"{prefix}_f_email",
+                                 placeholder="you@example.com")
         _f_new = st.text_input("New password", type="password",
-                               key=f"{prefix}_f_new")
+                               key=f"{prefix}_f_new",
+                               placeholder="At least 6 characters")
         _f_new2 = st.text_input("Confirm new password", type="password",
-                                key=f"{prefix}_f_new2")
+                                key=f"{prefix}_f_new2",
+                                placeholder="Repeat new password")
         _f_go = st.form_submit_button("Reset password")
     if _f_go:
         if _f_new != _f_new2:
-            st.error("❌ New passwords do not match.")
+            st.error("New passwords do not match.")
         else:
             try:
                 _u = auth_service.reset_jobseeker_password(_f_user, _f_email, _f_new)
-                st.success(f"✅ Password reset — log in as {_u['username']}.")
+                st.success(f"Password reset — log in as {_u['username']}.")
             except auth_service.AuthValidationException as ex:
-                st.error(f"❌ {ex}")
+                st.error(f"{ex}")
             except Exception as ex:
-                st.error(f"❌ Reset failed: {type(ex).__name__}: {ex}")
+                st.error(f"Reset failed: {type(ex).__name__}: {ex}")
 
 
-@st.dialog("🔑 Change password", width="small")
+@st.dialog("Change password", width="small")
 def _change_password_dialog():
+    _inject_auth_css()
+    _auth_brand("Change password", "Use at least 6 characters, different from the old one.")
     with st.form("change_pw_form"):
-        _c_cur = st.text_input("Current password", type="password")
+        _c_cur = st.text_input("Current password", type="password",
+                               placeholder="Current password")
         _c_new = st.text_input("New password", type="password",
-                               help="At least 6 characters.")
-        _c_new2 = st.text_input("Confirm new password", type="password")
+                               placeholder="New password")
+        _c_new2 = st.text_input("Confirm new password", type="password",
+                                placeholder="Repeat new password")
         _c_go = st.form_submit_button("Change password", type="primary")
     if _c_go:
         if _c_new != _c_new2:
-            st.error("❌ New passwords do not match.")
+            st.error("New passwords do not match.")
         else:
             try:
                 auth_service.change_jobseeker_password(
@@ -866,65 +948,109 @@ def _change_password_dialog():
                 st.session_state["pw_changed_ok"] = True
                 st.rerun()
             except auth_service.AuthValidationException as ex:
-                st.error(f"❌ {ex}")
+                st.error(f"{ex}")
             except Exception as ex:
-                st.error(f"❌ Change failed: {type(ex).__name__}: {ex}")
+                st.error(f"Change failed: {type(ex).__name__}: {ex}")
+
+
+@st.dialog("Edit profile", width="small")
+def _change_name_dialog():
+    """Modern 'change name' — updates the jobseeker username."""
+    _inject_auth_css()
+    _auth_brand("Edit profile", "Change how your name appears on CVision.")
+    _current = _current_jobseeker_name() or ""
+    with st.form("change_name_form"):
+        _n_new = st.text_input("Display name", value=_current,
+                               placeholder="e.g. alice_j",
+                               help="3-30 characters: letters, digits, _ . -")
+        _n_go = st.form_submit_button("Save changes", type="primary")
+    if _n_go:
+        try:
+            _u = auth_service.change_jobseeker_username(
+                _current_jobseeker_id(), _n_new)
+            st.session_state["jobseeker_name"] = _u["username"]
+            st.session_state["profile_changed_ok"] = True
+            st.rerun()
+        except (auth_service.UsernameTakenException,
+                auth_service.AuthValidationException) as ex:
+            st.error(f"{ex}")
+        except Exception as ex:
+            st.error(f"Change failed: {type(ex).__name__}: {ex}")
 
 
 def _render_register_form(prefix):
+    _inject_auth_css()
+    _auth_brand("Create your account", "Free forever. Your CVs stay private to you.")
     with st.form(f"{prefix}_register_form"):
         _r_user = st.text_input("Username", key=f"{prefix}_r_user",
+                                placeholder="e.g. alice_j",
                                 help="3-30 characters: letters, digits, _ . -")
-        _r_email = st.text_input("Email", key=f"{prefix}_r_email")
+        _r_email = st.text_input("Email", key=f"{prefix}_r_email",
+                                 placeholder="you@example.com")
         _r_pw = st.text_input("Password", type="password", key=f"{prefix}_r_pw",
+                              placeholder="At least 6 characters",
                               help="At least 6 characters. Stored as a salted hash.")
         _r_pw2 = st.text_input("Confirm password", type="password",
-                               key=f"{prefix}_r_pw2")
-        _reg_go = st.form_submit_button("Register", type="primary")
+                               key=f"{prefix}_r_pw2",
+                               placeholder="Repeat password")
+        _reg_go = st.form_submit_button("Create account", type="primary")
+    # Live password-strength meter (UI only — policy stays min 6 chars).
+    _typed_pw = st.session_state.get(f"{prefix}_r_pw") or ""
+    if _typed_pw:
+        _pct, _lbl, _col = _pw_strength(_typed_pw)
+        st.markdown(
+            f'<div class="pw-meter"><div style="width:{_pct}%;background:{_col}"></div></div>'
+            f'<div class="pw-label" style="color:{_col}">Password strength: {_lbl}</div>',
+            unsafe_allow_html=True,
+        )
     # SRS-063 — inline duplicate warning without submitting: Streamlit
     # reruns on every keystroke, so this shows as soon as the value
     # matches an existing account, before the form is submitted.
     try:
         if _r_user and auth_service.is_username_taken(_r_user):
-            st.error("That username is already registered.")
+            st.warning("That username is already registered. Try another one.")
         if _r_email and auth_service.is_email_taken(_r_email):
-            st.error("That email is already registered.")
+            st.warning("That email is already registered. Try logging in instead.")
     except Exception:
         pass
     if _reg_go:
         if _r_pw != _r_pw2:
-            st.error("❌ Passwords do not match.")
+            st.error("Passwords do not match.")
         else:
             try:
                 _new = auth_service.register_jobseeker(_r_user, _r_email, _r_pw)
                 _login_success(_new)
-                st.success(f"✅ Account created — welcome, {_new['username']}!")
+                st.success(f"Account created — welcome, {_new['username']}!")
                 st.rerun()
             except (auth_service.UsernameTakenException,
                     auth_service.EmailTakenException,
                     auth_service.AuthValidationException) as ex:
-                st.error(f"❌ {ex}")
+                st.error(f"{ex}")
             except Exception as ex:
-                st.error(f"❌ Registration failed: {type(ex).__name__}: {ex}")
+                st.error(f"Registration failed: {type(ex).__name__}: {ex}")
+    st.markdown('<div class="auth-terms">By creating an account you agree to keep your credentials private. '
+                'Passwords are stored as salted hashes, never plaintext.</div>',
+                unsafe_allow_html=True)
 
 
-@st.dialog("🔐 Log in to continue", width="small")
+@st.dialog("Log in to continue", width="small")
 def _auth_dialog():
     """Popup for guests: login / signup tabs (SRS-066, SRS-067)."""
-    st.caption("Log in or create an account to upload your CV.")
-    _t_login, _t_register = st.tabs(["🔑 Log In", "📝 Register"])
+    _inject_auth_css()
+    st.caption("Log in or create a free account to upload your CV.")
+    _t_login, _t_register = st.tabs(["Log In", "Sign Up"])
     with _t_login:
         _render_login_form("dlg")
     with _t_register:
         _render_register_form("dlg")
 
 
-@st.dialog("🔑 Log In", width="small")
+@st.dialog("Welcome back", width="small")
 def _login_dialog():
     _render_login_form("top")
 
 
-@st.dialog("📝 Register", width="small")
+@st.dialog("Join CVision", width="small")
 def _register_dialog():
     _render_register_form("top")
 
@@ -982,19 +1108,135 @@ input::-webkit-textfield-decoration-container { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 if _current_jobseeker_id():
-    _h_logo, _h_auth = st.columns([6, 4], vertical_alignment="center")
+    # Narrow right column — only a 42px circle lives here, so a wide
+    # column leaves a 100-300px empty strip. [20, 1] + zeroed gap kills it.
+    _h_logo, _h_auth = st.columns([20, 1], gap="small", vertical_alignment="center")
     with _h_logo:
         st.markdown('<div class="title">📄 CVision</div>', unsafe_allow_html=True)
     with _h_auth:
-        _c_name, _c_pw, _c_out = st.columns([2, 1, 1], gap="small")
-        with _c_name:
-            st.markdown(f"👤 **{_current_jobseeker_name()}**")
-        with _c_pw:
-            if st.button("Password", key="jobseeker_pw_top",
-                         help="Change your password", use_container_width=True):
+        _uname = _current_jobseeker_name() or "Account"
+        _initial = (_uname.strip()[0].upper() if _uname.strip() else "A")
+        st.markdown(
+            f"""<style>
+            /* Kill the ~33px air gap left of the profile icon:
+               Streamlit's horizontal-block gap + column padding. */
+            div[data-testid="stHorizontalBlock"]:has(div[data-testid="stPopover"]) {{
+                gap: 0 !important;
+            }}
+            div[data-testid="stHorizontalBlock"]:has(div[data-testid="stPopover"]) div[data-testid="stColumn"]:last-child {{
+                padding-left: 0 !important;
+                margin-left: 0 !important;
+                flex: 0 0 42px !important;
+                min-width: 42px !important;
+                max-width: 42px !important;
+            }}
+            div[data-testid="stHorizontalBlock"]:has(div[data-testid="stPopover"]) div[data-testid="stColumn"]:first-child {{
+                padding-right: 0 !important;
+            }}
+            div[data-testid="stPopover"] {{
+                display: flex; justify-content: flex-end;
+                width: 42px !important; margin: 0 0 0 auto !important;
+                padding: 0 !important;
+            }}
+            /* Circle style for the trigger only — the button lives in a
+               wrapper div inside stPopover, so `> button` never matches.
+               stPopoverBody is portalled elsewhere, so this does NOT hit
+               the inner Change name / Change password / Log out buttons. */
+            div[data-testid="stPopover"] button {{
+                width: 42px !important; height: 42px !important;
+                min-width: 42px !important; max-width: 42px !important;
+                min-height: 42px !important; max-height: 42px !important;
+                padding: 0 !important; aspect-ratio: 1 / 1 !important;
+                border-radius: 50% !important;
+                position: relative !important;
+                background: linear-gradient(135deg, #4b4bf7, #8b5cf6) !important;
+                border: none !important;
+                box-shadow: 0 2px 8px rgba(75,75,247,0.35) !important;
+            }}
+            /* Hide Streamlit's own label + caret (they cause the off-center jam) */
+            div[data-testid="stPopover"] button p,
+            div[data-testid="stPopover"] button span,
+            div[data-testid="stPopover"] button svg {{
+                display: none !important;
+            }}
+            /* Render the initial ourselves, perfectly centered */
+            div[data-testid="stPopover"] button::after {{
+                content: "{_initial}";
+                position: absolute !important; inset: 0 !important;
+                display: flex !important; align-items: center !important;
+                justify-content: center !important;
+                font-weight: 700 !important; font-size: 20px !important;
+                color: white !important; line-height: 1 !important;
+                pointer-events: none !important;
+            }}
+            div[data-testid="stPopover"] button:hover {{ filter: brightness(1.08); }}
+            /* Profile popover body: every row equally spaced */
+            div[data-testid="stPopoverBody"] {{
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+                padding: 14px 14px !important;
+                min-width: 240px !important;
+            }}
+            div[data-testid="stPopoverBody"] div[data-testid="stMarkdown"] {{
+                margin: 0 !important;
+                padding: 0 !important;
+            }}
+            div[data-testid="stPopoverBody"] hr {{
+                margin: 4px 0 !important;
+            }}
+            div[data-testid="stPopoverBody"] div[data-testid="stButton"] {{
+                margin: 0 !important;
+                padding: 0 !important;
+            }}
+            div[data-testid="stPopoverBody"] div[data-testid="stButton"] > button {{
+                width: 100% !important;
+                height: 38px !important;
+                min-height: 38px !important;
+                min-width: 0 !important;
+                max-width: none !important;
+                max-height: none !important;
+                aspect-ratio: auto !important;
+                border-radius: 8px !important;
+                position: static !important;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+            }}
+            /* In case some Streamlit versions nest the body inside stPopover,
+               undo the circle's label-hiding and initial overlay for inner buttons. */
+            div[data-testid="stPopoverBody"] div[data-testid="stButton"] > button p,
+            div[data-testid="stPopoverBody"] div[data-testid="stButton"] > button span {{
+                display: block !important;
+            }}
+            div[data-testid="stPopoverBody"] div[data-testid="stButton"] > button svg {{
+                display: inline-block !important;
+            }}
+            div[data-testid="stPopoverBody"] div[data-testid="stButton"] > button::after {{
+                content: none !important;
+                display: none !important;
+            }}
+            .acct-name {{ font-size: 15px; font-weight: 700; color: #111827; line-height: 1.4; margin: 0; padding: 0; }}
+            .acct-email {{ font-size: 12px; color: #6b7280; line-height: 1.4; margin: 0; padding: 0; }}
+            </style>""",
+            unsafe_allow_html=True,
+        )
+        # Popover renders directly in _h_auth (right-aligned via CSS).
+        # No empty inner column — that was the ~121px air gap.
+        with st.popover(_initial):
+            st.markdown(f'<div class="acct-name">{_uname}</div>',
+                        unsafe_allow_html=True)
+            st.markdown(
+                f'<div class="acct-email">{st.session_state.get("jobseeker_email", "")}</div>',
+                unsafe_allow_html=True,
+            )
+            st.divider()
+            if st.button("✏️ Change name", key="acct_change_name",
+                         use_container_width=True):
+                _change_name_dialog()
+            if st.button("🔑 Change password", key="acct_change_pw",
+                         use_container_width=True):
                 _change_password_dialog()
-        with _c_out:
-            if st.button("Log Out", key="jobseeker_logout_top",
+            st.divider()
+            if st.button("🚪 Log out", key="jobseeker_logout_top",
                          type="primary", use_container_width=True):
                 _logout()
                 st.rerun()
@@ -1005,11 +1247,11 @@ else:
     with _h_auth:
         _c_in, _c_up = st.columns(2, gap="small")
         with _c_in:
-            if st.button("Login", key="jobseeker_login_top",
+            if st.button("Log in", key="jobseeker_login_top",
                          use_container_width=True):
                 _login_dialog()
         with _c_up:
-            if st.button("Sign In", key="jobseeker_register_top",
+            if st.button("Sign up", key="jobseeker_register_top",
                          type="primary", use_container_width=True):
                 _register_dialog()
 st.markdown('<div class="subtitle">Upload your CV and discover your best job matches 🚀</div>',
@@ -1019,6 +1261,12 @@ if st.session_state.pop("pw_changed_ok", False):
     st.success("✅ Password changed.")
     try:
         st.toast("✅ Password changed.")
+    except Exception:
+        pass
+if st.session_state.pop("profile_changed_ok", False):
+    st.success("✅ Profile name updated.")
+    try:
+        st.toast("✅ Profile name updated.")
     except Exception:
         pass
 

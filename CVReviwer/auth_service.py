@@ -283,6 +283,42 @@ def change_jobseeker_password(jobseeker_id: str, current_password: str,
     )
 
 
+def change_jobseeker_username(jobseeker_id: str, new_username: str) -> dict:
+    """Change the display name (username) for a signed-in Jobseeker.
+
+    Validates format with the same rule as registration, rejects a
+    duplicate, then updates the row. Returns {id, username, email}.
+    Raises AuthValidationException / UsernameTakenException.
+    """
+    if not jobseeker_id:
+        raise AuthValidationException("Not signed in.")
+    cleaned = _clean_username(new_username)
+    if not cleaned:
+        raise AuthValidationException("Username is required.")
+    if not _USERNAME_RE.match(cleaned):
+        raise AuthValidationException(
+            "Username must be 3-30 characters: letters, digits, _ . -"
+        )
+    rows = db.query(
+        "SELECT id, username, email FROM jobseeker WHERE id = %s",
+        (str(jobseeker_id),),
+    )
+    if not rows:
+        raise AuthValidationException("Account not found.")
+    current = rows[0].get("username") or ""
+    if cleaned == current:
+        return {"id": rows[0]["id"], "username": current,
+                "email": rows[0].get("email")}
+    if is_username_taken(cleaned):
+        raise UsernameTakenException("That username is already registered.")
+    db.execute(
+        "UPDATE jobseeker SET username = %s WHERE id = %s",
+        (cleaned, str(jobseeker_id)),
+    )
+    return {"id": rows[0]["id"], "username": cleaned,
+            "email": rows[0].get("email")}
+
+
 def reset_jobseeker_password(username: str, email: str, new_password: str) -> dict:
     """Forgot-password reset without an email server.
 
