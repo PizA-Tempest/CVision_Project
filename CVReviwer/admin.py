@@ -743,6 +743,35 @@ def _render_create_tab():
 # Entry point
 # ---------------------------------------------------------------------
 
+def _restore_admin_session():
+    """Restore admin login from the URL token after a browser refresh.
+
+    Same cause/fix as the jobseeker side in app.py: session_state is
+    cleared on refresh, the query-param token is not.
+    """
+    try:
+        import auth_service
+        if not st.session_state.get("admin_authenticated"):
+            _tok = st.query_params.get(auth_service.ADMIN_TOKEN_PARAM)
+            if _tok:
+                _admin = auth_service.get_admin_by_session(_tok)
+                if _admin:
+                    st.session_state["admin_authenticated"] = True
+                    st.session_state["admin_user"] = _admin["username"]
+                    try:
+                        log_service.set_current_user(
+                            _admin.get("id") or _admin["username"])
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        del st.query_params[auth_service.ADMIN_TOKEN_PARAM]
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+
 def show_admin_page():
     for key, default in [
         ("admin_authenticated", False),
@@ -757,6 +786,8 @@ def show_admin_page():
     ]:
         if key not in st.session_state:
             st.session_state[key] = default
+
+    _restore_admin_session()
 
     # Login gate — see module docstring re: Feature #5 (Authentication)
     if not st.session_state["admin_authenticated"]:
@@ -778,6 +809,13 @@ def show_admin_page():
                 # Resolves the log_service.py gap flagged in TBD_and_Conflicts.md:
                 # stamps log entries with the Admin's real UUID, not the username.
                 log_service.set_current_user(admin.get("id") or username)
+                # Persist across refresh (see _restore_admin_session).
+                try:
+                    import auth_service
+                    _tok = auth_service.create_admin_session(admin.get("id"))
+                    st.query_params[auth_service.ADMIN_TOKEN_PARAM] = _tok
+                except Exception:
+                    pass
                 st.rerun()
             else:
                 st.error("Invalid credentials")
@@ -804,7 +842,14 @@ def show_admin_page():
         if st.button("Log Out", use_container_width=True):
             st.session_state["admin_authenticated"] = False
             st.session_state["admin_user"] = ""
-            # Return to the clean main-page URL on logout.
+            # Revoke the persistent token (SRS-076) and return to the
+            # clean main-page URL on logout.
+            try:
+                import auth_service
+                auth_service.delete_session(
+                    st.query_params.get(auth_service.ADMIN_TOKEN_PARAM))
+            except Exception:
+                pass
             try:
                 if "page" in st.query_params:
                     del st.query_params["page"]
@@ -813,6 +858,12 @@ def show_admin_page():
                     st.query_params.clear()
                 except Exception:
                     pass
+            try:
+                import auth_service as _auth_mod
+                if _auth_mod.ADMIN_TOKEN_PARAM in st.query_params:
+                    del st.query_params[_auth_mod.ADMIN_TOKEN_PARAM]
+            except Exception:
+                pass
             st.rerun()
 
     st.markdown("---")

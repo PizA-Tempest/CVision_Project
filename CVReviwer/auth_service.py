@@ -108,6 +108,9 @@ def ensure_auth_tables() -> None:
 
     Safe to call on every startup (Streamlit Cloud has no migration step).
     The admin table already exists; its passwords are upgraded lazily.
+    Also creates auth_session, which holds the persistent login tokens
+    that survive a browser refresh (Streamlit's session_state does not —
+    a refresh starts a new session and clears it).
     """
     db.execute(
         """
@@ -117,6 +120,19 @@ def ensure_auth_tables() -> None:
             email         VARCHAR(255) NOT NULL UNIQUE,
             password_hash VARCHAR(255) NOT NULL,
             created_at    DATETIME(3)  NULL
+        ) ENGINE=InnoDB
+        """
+    )
+    db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS auth_session (
+            token        VARCHAR(128) NOT NULL PRIMARY KEY,
+            jobseeker_id VARCHAR(36)  NULL,
+            admin_id     VARCHAR(36)  NULL,
+            created_at   DATETIME(3)  NULL,
+            expires_at   DATETIME(3)  NOT NULL,
+            KEY idx_auth_js (jobseeker_id),
+            KEY idx_auth_admin (admin_id)
         ) ENGINE=InnoDB
         """
     )
@@ -384,3 +400,150 @@ def authenticate_admin(username: str, password: str) -> dict | None:
         except Exception:
             pass  # login still succeeds; upgrade is best-effort
     return {"id": row.get("id"), "username": row.get("username")}
+
+
+# ---------------------------------------------------------------------
+# Persistent sessions (survive browser refresh)
+# ---------------------------------------------------------------------
+# Streamlit's session_state is tied to the websocket connection: a
+# browser refresh starts a new session and clears it, logging the user
+# out. The fix is a random token stored server-side (this table) and
+# echoed in the URL query params (which the browser keeps on refresh).
+# On startup each page validates the token from the URL and restores
+# the session. Tokens expire after 30 days; logout deletes them.
+
+SESSION_DAYS = 30
+JOBSEEKER_TOKEN_PARAM = "auth_token"
+ADMIN_TOKEN_PARAM = "admin_token"
+
+
+def _new_token() -> str:
+    return secrets.token_urlsafe(32)
+
+
+def _session_expiry() -> datetime:
+    from datetime import timedelta
+    return datetime.now(timezone.utc) + timedelta(days=SESSION_DAYS)
+
+
+def create_jobseeker_session(jobseeker_id: str) -> str:
+    """Mint a persistent login token for a Jobseeker. Returns the token."""
+    try:
+        ensure_auth_tables()
+    except Exception:
+        pass
+    token = _new_token()
+    now = datetime.now(timezone.utc)
+    db.execute(
+        "INSERT INTO auth_session (token, jobseeker_id, admin_id,"
+        " created_at, expires_at) VALUES (%s, %s, NULL, %s, %s)",
+        (token, str(jobseeker_id), now, _session_expiry()),
+    )
+    return token
+
+
+def create_admin_session(admin_id: str) -> str:
+    """Mint a persistent login token for an Administrator. Returns the token."""
+    try:
+        ensure_auth_tables()
+    except Exception:
+        pass
+    token = _new_token()
+    now = datetime.now(timezone.utc)
+    db.execute(
+        "INSERT INTO auth_session (token, jobseeker_id, admin_id,"
+        " created_at, expires_at) VALUES (%s, NULL, %s, %s, %s)",
+        (token, str(admin_id), now, _session_expiry()),
+    )
+    return token
+
+
+def get_jobseeker_by_session(token: str | None) -> dict | None:
+    """Validate a jobseeker token; return {id, username, email} or None.
+
+    Expired/unknown tokens return None (and the expired row is removed
+    best-effort so the table does not fill with dead tokens).
+    """
+    if not token:
+        return None
+    try:
+        rows = db.query(
+            "SELECT s.jobseeker_id, s.expires_at,"
+            " j.username, j.email FROM auth_session s"
+            " LEFT JOIN jobseeker j ON j.id = s.jobseeker_id"
+            " WHERE s.token = %s AND s.jobseeker_id IS NOT NULL",
+            (str(token),),
+        )
+    except Exception:
+        return None
+    if not rows:
+        return None
+    row = rows[0]
+    try:
+        exp = row.get("expires_at")
+        if exp is not None:
+            if getattr(exp, "tzinfo", None) is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if exp < datetime.now(timezone.utc):
+                try:
+                    db.execute(
+                        "DELETE FROM auth_session WHERE token = %s",
+                        (str(token),),
+                    )
+                except Exception:
+                    pass
+                return None
+    except Exception:
+        pass
+    if not row.get("jobseeker_id") or not row.get("username"):
+        return None
+    return {"id": row["jobseeker_id"],
+            "username": row["username"], "email": row.get("email")}
+
+
+def get_admin_by_session(token: str | None) -> dict | None:
+    """Validate an admin token; return {id, username} or None."""
+    if not token:
+        return None
+    try:
+        rows = db.query(
+            "SELECT s.admin_id, s.expires_at,"
+            " a.username FROM auth_session s"
+            " LEFT JOIN admin a ON a.id = s.admin_id"
+            " WHERE s.token = %s AND s.admin_id IS NOT NULL",
+            (str(token),),
+        )
+    except Exception:
+        return None
+    if not rows:
+        return None
+    row = rows[0]
+    try:
+        exp = row.get("expires_at")
+        if exp is not None:
+            if getattr(exp, "tzinfo", None) is None:
+                exp = exp.replace(tzinfo=timezone.utc)
+            if exp < datetime.now(timezone.utc):
+                try:
+                    db.execute(
+                        "DELETE FROM auth_session WHERE token = %s",
+                        (str(token),),
+                    )
+                except Exception:
+                    pass
+                return None
+    except Exception:
+        pass
+    if not row.get("admin_id") or not row.get("username"):
+        return None
+    return {"id": row.get("admin_id"), "username": row.get("username")}
+
+
+def delete_session(token: str | None) -> None:
+    """Remove a session token (logout). Never raises."""
+    if not token:
+        return
+    try:
+        db.execute("DELETE FROM auth_session WHERE token = %s", (str(token),))
+    except Exception:
+        pass

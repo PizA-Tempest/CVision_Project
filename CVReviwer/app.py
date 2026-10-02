@@ -157,6 +157,37 @@ def _current_jobseeker_id():
 def _current_jobseeker_name():
     return st.session_state.get("jobseeker_name")
 
+
+def _restore_persistent_login():
+    """Restore login from the URL token after a browser refresh.
+
+    Streamlit's session_state is tied to the websocket connection, so a
+    refresh starts a new session and clears it (the reported bug: login
+    -> refresh -> back to login). The token in the URL query params
+    survives the refresh, so validate it against auth_session and
+    repopulate session_state. Invalid/expired tokens are dropped from
+    the URL so they are not retried forever.
+    """
+    try:
+        if not st.session_state.get("jobseeker_id"):
+            _tok = st.query_params.get(auth_service.JOBSEEKER_TOKEN_PARAM)
+            if _tok:
+                _user = auth_service.get_jobseeker_by_session(_tok)
+                if _user:
+                    st.session_state["jobseeker_id"] = _user["id"]
+                    st.session_state["jobseeker_name"] = _user["username"]
+                    st.session_state["jobseeker_email"] = _user.get("email", "")
+                else:
+                    try:
+                        del st.query_params[auth_service.JOBSEEKER_TOKEN_PARAM]
+                    except Exception:
+                        pass
+    except Exception:
+        pass
+
+
+_restore_persistent_login()
+
 st.markdown("""
 <style>
 [data-testid="stSidebar"] { display: none !important; }
@@ -753,10 +784,28 @@ def _login_success(user):
                "auth_shown_for", "top_forgot_mode", "dlg_forgot_mode"):
         st.session_state.pop(_k, None)
     st.session_state["auth_popup"] = None
+    # Persist login across browser refresh: mint a server-side token and
+    # keep it in the URL (query params survive refresh, session_state
+    # does not). Restored by _restore_persistent_login() on next load.
+    try:
+        _tok = auth_service.create_jobseeker_session(user["id"])
+        st.query_params[auth_service.JOBSEEKER_TOKEN_PARAM] = _tok
+    except Exception:
+        pass
 
 
 def _logout():
     # SRS-076 — end the session and clear session state.
+    try:
+        auth_service.delete_session(
+            st.query_params.get(auth_service.JOBSEEKER_TOKEN_PARAM))
+    except Exception:
+        pass
+    try:
+        if auth_service.JOBSEEKER_TOKEN_PARAM in st.query_params:
+            del st.query_params[auth_service.JOBSEEKER_TOKEN_PARAM]
+    except Exception:
+        pass
     for _k in ("jobseeker_id", "jobseeker_name", "jobseeker_email",
                "cv_file_id", "review_cv_id", "review_seed",
                "calculated", "masked_fields", "processed_upload",
@@ -882,6 +931,13 @@ def _render_login_form(prefix):
                 except Exception:
                     pass
                 st.session_state["auth_popup"] = None
+                # Persistent admin token so refresh on the admin page
+                # keeps the session (same mechanism as jobseeker login).
+                try:
+                    _atok = auth_service.create_admin_session(_admin["id"])
+                    st.query_params[auth_service.ADMIN_TOKEN_PARAM] = _atok
+                except Exception:
+                    pass
                 st.success(f"Welcome, {_admin['username']} — opening admin panel...")
                 st.query_params["page"] = "admin"
                 st.rerun()
