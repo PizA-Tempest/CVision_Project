@@ -781,7 +781,8 @@ def _login_success(user):
     st.session_state["jobseeker_email"] = user["email"]
     for _k in ("cv_file_id", "review_cv_id", "review_seed",
                "calculated", "masked_fields", "processed_upload",
-               "auth_shown_for", "top_forgot_mode", "dlg_forgot_mode"):
+               "auth_shown_for", "top_forgot_mode", "dlg_forgot_mode",
+               "view_mode", "auto_view_results"):
         st.session_state.pop(_k, None)
     st.session_state["auth_popup"] = None
     # Persist login across browser refresh: mint a server-side token and
@@ -810,7 +811,8 @@ def _logout():
                "cv_file_id", "review_cv_id", "review_seed",
                "calculated", "masked_fields", "processed_upload",
                "auth_popup", "auth_shown_for",
-               "top_forgot_mode", "dlg_forgot_mode"):
+               "top_forgot_mode", "dlg_forgot_mode",
+               "view_mode", "auto_view_results"):
         st.session_state.pop(_k, None)
 
 
@@ -1392,13 +1394,38 @@ def _fmt_cv_date(value):
 if _current_jobseeker_id():
     if previous:
         with st.expander(f"📁 My CVs ({len(previous)})"):
+            # My CVs cards: force symmetric vertical centering. The columns
+            # already ask for center alignment, but inner element defaults
+            # leave ~31px on top vs ~15px at the bottom. Scoped to these
+            # cards via the container key (Streamlit adds `st-key-<key>`
+            # to the keyed block, so no :has() chain is needed).
+            st.markdown(
+                """<style>
+                div[class*="st-key-mycv_"] div[data-testid="stHorizontalBlock"] {
+                    align-items: center !important;
+                }
+                div[class*="st-key-mycv_"] div[data-testid="stElementContainer"] {
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                }
+                div[class*="st-key-mycv_"] div[data-testid="stMarkdownContainer"] {
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                }
+                div[class*="st-key-mycv_"] div[data-testid="stMarkdownContainer"] > div {
+                    margin-top: 0 !important;
+                    margin-bottom: 0 !important;
+                }
+                </style>""",
+                unsafe_allow_html=True,
+            )
             for row in previous[:20]:
                 # One bordered card per CV. Columns keep filename, date,
                 # View on ONE row even with long names (horizontal container
                 # wraps). Name truncates with ellipsis; date centered.
-                with st.container(border=True):
+                with st.container(border=True, key=f"mycv_{row['cv_id']}"):
                     _cc1, _cc2, _cc3 = st.columns(
-                        [4, 2.6, 1.2], vertical_alignment="center", gap=None)
+                        [4, 2.6, 1.2], vertical_alignment="center", gap=0)
                     with _cc1:
                         _fname = row.get('original_filename') or row['cv_id']
                         st.markdown(
@@ -1411,7 +1438,8 @@ if _current_jobseeker_id():
                     with _cc3:
                         with st.container(horizontal=True,
                                            horizontal_alignment="right",
-                                           gap=None, border=False):
+                                           vertical_alignment="center",
+                                           gap=0, border=False):
                             if st.button("View", key=f"view_{row['cv_id']}",
                                          width=150):
                                 st.session_state["cv_file_id"] = row["cv_id"]
@@ -1547,6 +1575,55 @@ if cv_file_id and not _current_jobseeker_id():
     cv_file_id = None
 
 if cv_file_id:
+    if st.session_state.get("view_mode") == cv_file_id:
+        # "View" on a stored CV — an ✕ closes the results and returns to
+        # the upload page. Clears view keys only: processed_upload /
+        # masked_fields are left alone so a file still sitting in the
+        # uploader is not re-processed (no duplicate record / AI call).
+        _vrow = next((r for r in previous if r.get("cv_id") == cv_file_id), {})
+        _vname = _vrow.get("original_filename") or cv_file_id
+        # Zero air gap around the ✕: gap=0 sets the native pixel gap
+        # (no CSS needed for the 12px middle gap), the button hugs its
+        # content, and the keyed selectors below shrink the button
+        # column + the ✕ itself into a 28px square. Streamlit adds
+        # `st-key-<key>` to the button's element container, so no
+        # fragile :has() chain is needed for the button itself.
+        st.markdown(
+            """<style>
+            div[data-testid="stColumn"]:has(.st-key-close_view_results) {
+                flex: 0 0 auto !important;
+                min-width: 0 !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+            }
+            .st-key-close_view_results div[data-testid="stButton"] {
+                margin: 0 !important;
+            }
+            .st-key-close_view_results div[data-testid="stButton"] > button {
+                min-width: 0 !important;
+                width: 28px !important;
+                height: 28px !important;
+                min-height: 28px !important;
+                max-height: 28px !important;
+                padding: 0 !important;
+                border-radius: 6px !important;
+            }
+            </style>""",
+            unsafe_allow_html=True,
+        )
+        _vt, _vx = st.columns([20, 1], vertical_alignment="center", gap=0)
+        with _vt:
+            st.markdown(f"📄 Viewing results for **{_vname}**")
+        with _vx:
+            if st.button("✕", key="close_view_results",
+                         help="Close results", width="content"):
+                for _k in ("cv_file_id", "review_cv_id", "review_seed",
+                           "calculated", "view_mode", "auto_view_results"):
+                    st.session_state.pop(_k, None)
+                st.rerun()
+
     masked_fields = st.session_state.get("masked_fields") or []
     if masked_fields:
         st.markdown(
