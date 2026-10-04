@@ -5,16 +5,30 @@ Owns Jobseeker registration / login and Administrator credential
 verification. Streamlit pages (app.py, admin.py) call into this module;
 no Streamlit calls live here so it stays directly testable.
 
-URS coverage:
-  URS-010 / SRS-063,069 — unique username+email, inline duplicate check
-  URS-011 / SRS-064,070,071 — jobseeker login by username OR email,
-      separate admin verification
-  URS-012 / SRS-072 — salted password hashes, never plaintext
-  URS-013 / SRS-073 — server-side upload guard (rejects unauthenticated)
-  URS-014 / SRS-074 — ownership helpers live in cv_data_adapter; the
-      jobseeker id produced here is what callers store/filter on
-  URS-015 / SRS-075 — admin session is independent of jobseeker session
-  URS-016 / SRS-076 — logout is done by callers clearing session state
+URS coverage (URS Feature#5.md — SRS-077..091):
+  URS-010 / SRS-077,078 — validate registration format before duplicate
+      check; unique username+email with inline error, no submit
+  URS-011 / SRS-079,080,081 — dedicated admin login verified independently;
+      jobseeker login by username OR email; Log in/Sign up replaced by
+      profile popover (display name, email, Change name, Change password,
+      Log out)
+  URS-012 / SRS-082,083 — salted password hashes only, never plaintext;
+      constant-time verify with generic failure
+  URS-013 / SRS-084,085 — guest sees upload section but picking a file
+      opens login/register popup and discards it; server rejects uploads
+      without a valid Jobseeker session
+  URS-014 / SRS-086,087 — "My CVs" shows only the owner's CVs, newest
+      first, max 20, parsed only; every upload records the Jobseeker ID as
+      owner and foreign CV IDs are rejected (ownership helpers live in
+      cv_data_adapter; the jobseeker id produced here is what callers
+      store/filter on)
+  URS-015 / SRS-088 — logout ends the session and clears session state
+  URS-016 / SRS-089,090 — signed-in password change (current + new 8-64,
+      blocklisted, different); forgotten-password reset (username + matching
+      email + new-password confirmation)
+  URS-017 / SRS-091 — signed-in username change via "Change name" (same
+      rule as registration, no duplicates, session display updates
+      immediately; unchanged name succeeds without a DB write)
 
 Hashing uses only the standard library (hashlib.pbkdf2_hmac + secrets)
 so no new dependency is needed. Stored format:
@@ -43,7 +57,65 @@ _SALT_BYTES = 16
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 _USERNAME_RE = re.compile(r"^[A-Za-z0-9_.\-]{3,30}$")
 
-MIN_PASSWORD_LEN = 6
+# Password policy (URS Feature#5.md):
+# SRS-077 (registration): 8-64 chars, length only — no blocklist, no forced
+#   complexity mix.
+# SRS-089/SRS-090 (change/reset new password): 8-64 chars + blocklist
+#   (NIST SP 800-63B style) + must differ from the old one on change.
+# The 64-char cap also bounds hashing cost and matches the DB column.
+MIN_PASSWORD_LEN = 8
+MAX_PASSWORD_LEN = 64
+MAX_EMAIL_LEN = 255
+
+COMMON_PASSWORDS = frozenset({
+    "password", "password1", "password123", "12345678", "123456789",
+    "1234567890", "qwerty", "qwerty123", "abc123", "11111111",
+    "123123123", "letmein", "welcome", "welcome1", "admin123",
+    "iloveyou", "monkey", "dragon", "football", "baseball",
+    "superman", "trustno1", "master", "shadow", "sunshine",
+    "princess", "qazwsx", "password12", "changeme", "cvision",
+    "cvision123",
+})
+
+
+def check_password_policy(password: str) -> None:
+    """Enforce the change/reset new-password policy (SRS-089, SRS-090).
+
+    8-64 chars, not on the blocklist. Raises AuthValidationException.
+    """
+    if not password:
+        raise AuthValidationException("Password is required.")
+    if len(password) < MIN_PASSWORD_LEN:
+        raise AuthValidationException(
+            f"Password must be at least {MIN_PASSWORD_LEN} characters."
+        )
+    if len(password) > MAX_PASSWORD_LEN:
+        raise AuthValidationException(
+            f"Password must be at most {MAX_PASSWORD_LEN} characters."
+        )
+    if password.strip().lower() in COMMON_PASSWORDS:
+        raise AuthValidationException(
+            "That password is too common — pick a less predictable one."
+        )
+
+
+def check_registration_password(password: str) -> None:
+    """Enforce the registration password rule (SRS-077): 8-64 chars only.
+
+    Deliberately no blocklist here — SRS-077 specifies length only, while
+    the blocklist applies to change/reset new passwords (SRS-089, SRS-090).
+    Raises AuthValidationException.
+    """
+    if not password:
+        raise AuthValidationException("Password is required.")
+    if len(password) < MIN_PASSWORD_LEN:
+        raise AuthValidationException(
+            f"Password must be at least {MIN_PASSWORD_LEN} characters."
+        )
+    if len(password) > MAX_PASSWORD_LEN:
+        raise AuthValidationException(
+            f"Password must be at most {MAX_PASSWORD_LEN} characters."
+        )
 
 
 class AuthValidationException(ValueError):
@@ -51,19 +123,19 @@ class AuthValidationException(ValueError):
 
 
 class UsernameTakenException(AuthValidationException):
-    """Username already exists (SRS-069)."""
+    """Username already exists (SRS-078)."""
 
 
 class EmailTakenException(AuthValidationException):
-    """Email already exists (SRS-069)."""
+    """Email already exists (SRS-078)."""
 
 
 class UnauthenticatedUploadException(PermissionError):
-    """CV upload attempted without a valid Jobseeker session (SRS-073)."""
+    """CV upload attempted without a valid Jobseeker session (SRS-085)."""
 
 
 # ---------------------------------------------------------------------
-# Hashing (SRS-072)
+# Hashing (SRS-082)
 # ---------------------------------------------------------------------
 
 def hash_password(password: str) -> str:
@@ -139,7 +211,7 @@ def ensure_auth_tables() -> None:
 
 
 # ---------------------------------------------------------------------
-# Validation + availability (SRS-063, SRS-069)
+# Validation + availability (SRS-077, SRS-078)
 # ---------------------------------------------------------------------
 
 def _clean_username(username: str | None) -> str:
@@ -151,7 +223,11 @@ def _clean_email(email: str | None) -> str:
 
 
 def validate_registration(username: str, email: str, password: str) -> tuple[str, str]:
-    """Validate format only (no DB). Returns cleaned (username, email)."""
+    """Validate registration format only, before any duplicate check (SRS-077).
+
+    Username 3-30 chars [A-Za-z0-9_.-], email standard format max 255
+    chars, password 8-64 chars. Returns cleaned (username, email).
+    """
     username = _clean_username(username)
     email = _clean_email(email)
     if not username:
@@ -162,19 +238,16 @@ def validate_registration(username: str, email: str, password: str) -> tuple[str
         )
     if not email:
         raise AuthValidationException("Email is required.")
+    if len(email) > MAX_EMAIL_LEN:
+        raise AuthValidationException("Email must be at most 255 characters.")
     if not _EMAIL_RE.match(email):
         raise AuthValidationException("Enter a valid email address.")
-    if not password:
-        raise AuthValidationException("Password is required.")
-    if len(password) < MIN_PASSWORD_LEN:
-        raise AuthValidationException(
-            f"Password must be at least {MIN_PASSWORD_LEN} characters."
-        )
+    check_registration_password(password)
     return username, email
 
 
 def is_username_taken(username: str) -> bool:
-    """Inline duplicate check for the registration form (SRS-063)."""
+    """Inline duplicate check for the registration form (SRS-078)."""
     username = _clean_username(username)
     if not username:
         return False
@@ -183,7 +256,7 @@ def is_username_taken(username: str) -> bool:
 
 
 def is_email_taken(email: str) -> bool:
-    """Inline duplicate check for the registration form (SRS-063)."""
+    """Inline duplicate check for the registration form (SRS-078)."""
     email = _clean_email(email)
     if not email:
         return False
@@ -196,9 +269,10 @@ def is_email_taken(email: str) -> bool:
 # ---------------------------------------------------------------------
 
 def register_jobseeker(username: str, email: str, password: str) -> dict:
-    """Create a Jobseeker account (SRS-069, SRS-072).
+    """Create a Jobseeker account (SRS-077, SRS-078, SRS-082).
 
-    Checks uniqueness before inserting and stores only a salted hash.
+    Validates format first, then checks username/email uniqueness before
+    inserting, and stores only a salted hash.
     Raises UsernameTakenException / EmailTakenException / AuthValidationException.
     Never stores or logs the plaintext password.
     """
@@ -218,8 +292,11 @@ def register_jobseeker(username: str, email: str, password: str) -> dict:
 
 
 def authenticate_jobseeker(identifier: str, password: str) -> dict | None:
-    """Login with username OR email in one field (SRS-064, SRS-070).
+    """Login with username OR email in one field (SRS-080, SRS-083).
 
+    Matches the identifier then verifies against the stored hash with
+    constant-time comparison; returns a generic None on any failure with
+    no account-enumeration detail.
     Returns {id, username, email} on success, None on failure.
     """
     identifier = (identifier or "").strip()
@@ -257,7 +334,7 @@ def get_jobseeker_by_id(jobseeker_id: str) -> dict | None:
 
 
 def require_jobseeker(jobseeker_id: str | None) -> str:
-    """Server-side upload guard (SRS-073). Raises unless authenticated."""
+    """Server-side upload guard (SRS-085). Raises unless authenticated."""
     if not jobseeker_id:
         raise UnauthenticatedUploadException(
             "Log in to upload a CV."
@@ -266,19 +343,18 @@ def require_jobseeker(jobseeker_id: str | None) -> str:
 
 
 def _validate_new_password(password: str) -> None:
-    if not password or len(password) < MIN_PASSWORD_LEN:
-        raise AuthValidationException(
-            f"Password must be at least {MIN_PASSWORD_LEN} characters."
-        )
+    check_password_policy(password)
 
 
 def change_jobseeker_password(jobseeker_id: str, current_password: str,
                               new_password: str) -> None:
-    """Change password for a signed-in Jobseeker.
+    """Change password for a signed-in Jobseeker (SRS-089, SRS-082, SRS-083).
 
-    Verifies the current password against the stored hash, then stores
-    only the new salted hash. Raises AuthValidationException on wrong
-    current password or weak new password.
+    Verifies the current password against the stored hash, rejects a new
+    password outside 8-64 chars, on the blocklist, or the same as the old
+    one, then stores only the new salted hash. Wrong current password
+    yields a generic failure and changes nothing.
+    Raises AuthValidationException on any violation.
     """
     if not jobseeker_id:
         raise AuthValidationException("Not signed in.")
@@ -300,10 +376,13 @@ def change_jobseeker_password(jobseeker_id: str, current_password: str,
 
 
 def change_jobseeker_username(jobseeker_id: str, new_username: str) -> dict:
-    """Change the display name (username) for a signed-in Jobseeker.
+    """Change the display name (username) for a signed-in Jobseeker (SRS-091).
 
-    Validates format with the same rule as registration, rejects a
-    duplicate, then updates the row. Returns {id, username, email}.
+    Follows the registration rule (3-30 chars [A-Za-z0-9_.-]), must not
+    duplicate another account; submitting the current unchanged username
+    succeeds without a DB write and returns the existing account. The
+    caller updates the session display name immediately on success.
+    Returns {id, username, email}.
     Raises AuthValidationException / UsernameTakenException.
     """
     if not jobseeker_id:
@@ -335,16 +414,22 @@ def change_jobseeker_username(jobseeker_id: str, new_username: str) -> dict:
             "email": rows[0].get("email")}
 
 
-def reset_jobseeker_password(username: str, email: str, new_password: str) -> dict:
-    """Forgot-password reset without an email server.
+def reset_jobseeker_password(username: str, email: str, new_password: str,
+                               new_password_confirmation: str | None = None) -> dict:
+    """Forgot-password reset without an email server (SRS-090, SRS-082).
 
-    The username AND email must both match the same account (identity
-    check in place of an emailed token — note in production this should
-    be an emailed reset link). Stores only the new salted hash.
+    The username AND matching account email must both match the same
+    account, plus new-password confirmation that must match new_password.
+    On success stores only the new salted hash; on mismatch shows a
+    generic failure and changes nothing.
     Returns {id, username, email}. Raises AuthValidationException.
     """
     username = _clean_username(username)
     email = _clean_email(email)
+    if new_password_confirmation is None:
+        raise AuthValidationException("Password confirmation is required.")
+    if new_password != new_password_confirmation:
+        raise AuthValidationException("New passwords do not match.")
     _validate_new_password(new_password)
     if not username or not email:
         raise AuthValidationException("Username and email are both required.")
@@ -369,9 +454,11 @@ def reset_jobseeker_password(username: str, email: str, new_password: str) -> di
 # ---------------------------------------------------------------------
 
 def authenticate_admin(username: str, password: str) -> dict | None:
-    """Verify admin credentials against the stored hash (SRS-071, SRS-072).
+    """Verify admin credentials against the stored hash (SRS-079, SRS-080, SRS-082, SRS-083).
 
-    Accepts legacy plaintext rows once and upgrades them to a salted hash.
+    Independent of any Jobseeker credentials, using constant-time
+    comparison with a generic None on failure. Accepts legacy plaintext
+    rows once and upgrades them to a salted hash.
     Returns {id, username} on success, None on failure.
     """
     username = (username or "").strip()

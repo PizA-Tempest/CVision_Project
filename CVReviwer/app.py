@@ -142,8 +142,8 @@ class UnreadablePDFException(Exception):
 
 
 # Feature 5 (Authentication): the signed-in Jobseeker's id. Guests have
-# None — uploads are rejected server-side (SRS-073) and "My CVs" is
-# filtered to this id (SRS-068, SRS-074).
+# None — uploads are rejected server-side (SRS-085) and "My CVs" is
+# filtered to this id (SRS-086, SRS-087).
 try:
     auth_service.ensure_auth_tables()
 except Exception:
@@ -329,10 +329,10 @@ def process_cv(uploaded_file, jobseeker_id=None):
     Raises whatever the approved methods raise; the caller maps it to a
     message with M-03-03 handleUploadError or M-03-15 handleProtectionError.
     Raises UnauthenticatedUploadException when no Jobseeker is signed in
-    (SRS-073) — enforced here so a request that bypasses the UI is still
+    (SRS-085) — enforced here so a request that bypasses the UI is still
     rejected, regardless of what the interface displayed.
     """
-    # SRS-073 — server-side guard, independent of the UI redirect.
+    # SRS-085 — server-side guard, independent of the UI redirect.
     jobseeker_id = jobseeker_id or _current_jobseeker_id()
     auth_service.require_jobseeker(jobseeker_id)
     # M-03-01 -> M-03-04 validateCVFile, M-03-05 storeCVFile
@@ -796,7 +796,7 @@ def _login_success(user):
 
 
 def _logout():
-    # SRS-076 — end the session and clear session state.
+    # SRS-088 — end the session and clear session state.
     try:
         auth_service.delete_session(
             st.query_params.get(auth_service.JOBSEEKER_TOKEN_PARAM))
@@ -862,9 +862,9 @@ def _pw_strength(password):
     """Simple 0-100 strength for the register meter (UI only, no policy change)."""
     pw = password or ""
     score = 0
-    if len(pw) >= 6:
+    if len(pw) >= 8:
         score += 25
-    if len(pw) >= 10:
+    if len(pw) >= 12:
         score += 25
     if any(c.isupper() for c in pw) and any(c.islower() for c in pw):
         score += 25
@@ -895,7 +895,10 @@ def _render_login_form(prefix):
                   on_click=_set_forgot_mode, args=(prefix, False))
         return
     _auth_brand("Welcome back", "Log in to access your CVs and job matches.")
-    # SRS-064 — one field accepts a username OR an email address.
+    # SRS-080 — one identifier field accepts a username OR an email address.
+    # SRS-079 — administrators use the dedicated admin login page only;
+    # this form verifies Jobseeker credentials independently and never
+    # checks admin credentials.
     with st.form(f"{prefix}_login_form"):
         _identifier = st.text_input("Username or email", key=f"{prefix}_identifier",
                                     placeholder="you@example.com or username")
@@ -916,36 +919,9 @@ def _render_login_form(prefix):
                 st.success(f"Welcome back, {_user['username']}!")
                 st.rerun()
                 return
-            # Same login box also accepts administrator credentials: on a
-            # match the admin session is established and the app routes to
-            # the admin page. (Deviates from SRS-065's separate form per
-            # owner request — jobseeker and admin checks stay independent.)
-            try:
-                _admin = auth_service.authenticate_admin(_identifier, _password)
-            except Exception:
-                _admin = None
-            if _admin:
-                st.session_state["admin_authenticated"] = True
-                st.session_state["admin_user"] = _admin["username"]
-                try:
-                    import log_service
-                    log_service.set_current_user(_admin.get("id") or _admin["username"])
-                except Exception:
-                    pass
-                st.session_state["auth_popup"] = None
-                # Persistent admin token so refresh on the admin page
-                # keeps the session (same mechanism as jobseeker login).
-                try:
-                    _atok = auth_service.create_admin_session(_admin["id"])
-                    st.query_params[auth_service.ADMIN_TOKEN_PARAM] = _atok
-                except Exception:
-                    pass
-                st.success(f"Welcome, {_admin['username']} — opening admin panel...")
-                st.query_params["page"] = "admin"
-                st.rerun()
-            else:
-                # Exception flow E9 — no match or wrong password.
-                st.error("Invalid username/email or password.")
+            # SRS-083 / Exception flow G9 — no match or wrong password:
+            # generic failure with no account-enumeration detail.
+            st.error("Invalid username/email or password.")
     # on_click sets the flag before the rerun, so 1 click swaps the form.
     # No st.rerun() here — it would dismiss the dialog popup.
     st.button("Forgot password?", key=f"{prefix}_forgot_link",
@@ -967,28 +943,29 @@ def _render_forgot_form(prefix):
                                  placeholder="you@example.com")
         _f_new = st.text_input("New password", type="password",
                                key=f"{prefix}_f_new",
-                               placeholder="At least 6 characters")
+                               placeholder="At least 8 characters")
         _f_new2 = st.text_input("Confirm new password", type="password",
                                 key=f"{prefix}_f_new2",
                                 placeholder="Repeat new password")
         _f_go = st.form_submit_button("Reset password")
     if _f_go:
-        if _f_new != _f_new2:
-            st.error("New passwords do not match.")
-        else:
-            try:
-                _u = auth_service.reset_jobseeker_password(_f_user, _f_email, _f_new)
-                st.success(f"Password reset — log in as {_u['username']}.")
-            except auth_service.AuthValidationException as ex:
-                st.error(f"{ex}")
-            except Exception as ex:
-                st.error(f"Reset failed: {type(ex).__name__}: {ex}")
+        # SRS-090 — username + matching email + new-password confirmation.
+        # The match check also lives in the service so a UI bypass cannot
+        # skip it.
+        try:
+            _u = auth_service.reset_jobseeker_password(
+                _f_user, _f_email, _f_new, _f_new2)
+            st.success(f"Password reset — log in as {_u['username']}.")
+        except auth_service.AuthValidationException as ex:
+            st.error(f"{ex}")
+        except Exception as ex:
+            st.error(f"Reset failed: {type(ex).__name__}: {ex}")
 
 
 @st.dialog("Change password", width="small")
 def _change_password_dialog():
     _inject_auth_css()
-    _auth_brand("Change password", "Use at least 6 characters, different from the old one.")
+    _auth_brand("Change password", "Use at least 8 characters, different from the old one.")
     with st.form("change_pw_form"):
         _c_cur = st.text_input("Current password", type="password",
                                placeholder="Current password")
@@ -1049,13 +1026,13 @@ def _render_register_form(prefix):
         _r_email = st.text_input("Email", key=f"{prefix}_r_email",
                                  placeholder="you@example.com")
         _r_pw = st.text_input("Password", type="password", key=f"{prefix}_r_pw",
-                              placeholder="At least 6 characters",
-                              help="At least 6 characters. Stored as a salted hash.")
+                               placeholder="At least 8 characters",
+                               help="8-64 characters. Stored only as a salted hash (SRS-077, SRS-082).")
         _r_pw2 = st.text_input("Confirm password", type="password",
                                key=f"{prefix}_r_pw2",
                                placeholder="Repeat password")
         _reg_go = st.form_submit_button("Create account", type="primary")
-    # Live password-strength meter (UI only — policy stays min 6 chars).
+    # Live password-strength meter (UI only — policy stays min 8 chars).
     _typed_pw = st.session_state.get(f"{prefix}_r_pw") or ""
     if _typed_pw:
         _pct, _lbl, _col = _pw_strength(_typed_pw)
@@ -1064,9 +1041,12 @@ def _render_register_form(prefix):
             f'<div class="pw-label" style="color:{_col}">Password strength: {_lbl}</div>',
             unsafe_allow_html=True,
         )
-    # SRS-063 — inline duplicate warning without submitting: Streamlit
+    # SRS-078 — inline duplicate error without submitting: Streamlit
     # reruns on every keystroke, so this shows as soon as the value
     # matches an existing account, before the form is submitted.
+    # SRS-077 — format is validated before duplicates are checked
+    # (validate_registration raises first; register_jobseeker checks
+    # uniqueness only after format passes).
     try:
         if _r_user and auth_service.is_username_taken(_r_user):
             st.warning("That username is already registered. Try another one.")
@@ -1095,7 +1075,7 @@ def _render_register_form(prefix):
 
 @st.dialog("Log in to continue", width="small")
 def _auth_dialog():
-    """Popup for guests: login / signup tabs (SRS-066, SRS-067)."""
+    """Popup for guests: login / signup tabs (SRS-081, SRS-084)."""
     _inject_auth_css()
     st.caption("Log in or create a free account to upload your CV.")
     _t_login, _t_register = st.tabs(["Log In", "Sign Up"])
@@ -1368,7 +1348,8 @@ if st.session_state.pop("profile_changed_ok", False):
     )
 
 # ---------------------------------------------------------------------
-# "My CVs" (SRS-068, SRS-074) — only the signed-in Jobseeker's own CVs.
+# "My CVs" (SRS-086, SRS-087) — only the signed-in Jobseeker's own CVs,
+# newest first, max 20, parsed only.
 # ---------------------------------------------------------------------
 if _current_jobseeker_id():
     previous = cv_data_adapter.list_cv_ids_for(_current_jobseeker_id())
@@ -1450,9 +1431,9 @@ if _current_jobseeker_id():
                                 st.rerun()
 
 # ---------------------------------------------------------------------
-# Upload section (SRS-067): identical widget for everyone. A guest picking
+# Upload section (SRS-084): identical widget for everyone. A guest picking
 # a file gets the login/register popup and the file is discarded, never
-# processed. process_cv() also rejects unauthenticated uploads (SRS-073).
+# processed. process_cv() also rejects unauthenticated uploads (SRS-085).
 # ---------------------------------------------------------------------
 uploaded_file = st.file_uploader(
     "📤 Upload your CV (PDF)",
@@ -1467,7 +1448,7 @@ if not uploaded_file and st.session_state.get("processed_upload"):
         st.session_state.pop(_k, None)
 if uploaded_file and not _current_jobseeker_id():
     # Guest picked a file in the upload box -> login/register popup,
-    # file is discarded and never processed (SRS-067).
+    # file is discarded and never processed (SRS-084).
     # NOTE (Streamlit limit): the file chooser itself always opens on
     # click — there is no pre-chooser click event. The popup fires the
     # moment a file is chosen. Shown once per pick so it does not loop.
@@ -1522,7 +1503,7 @@ if uploaded_file:
                 )
                 st.stop()
             except auth_service.UnauthenticatedUploadException:
-                # SRS-073 — UI was bypassed; reject at the server level.
+                # SRS-085 — UI was bypassed; reject at the server level.
                 st.error("🔐 Please log in or register before uploading a CV.")
                 st.stop()
             except CVUploadException as ex:
@@ -1552,7 +1533,7 @@ if uploaded_file:
 
 cv_file_id = st.session_state.get("cv_file_id")
 
-# SRS-074 — a session holding another Jobseeker's CV id (stale session,
+# SRS-087 — a session holding another Jobseeker's CV id (stale session,
 # guessed id) must not render it. Ownership is checked against the
 # jobseeker_cv index with cvs.json as fallback.
 if cv_file_id and _current_jobseeker_id():

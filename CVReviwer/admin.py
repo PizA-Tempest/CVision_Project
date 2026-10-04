@@ -29,7 +29,7 @@ no M-numbered method (or even an implied one) covering them:
     TBD_and_Conflicts.md.
   - Editing an existing scraper's name/description/raw request.
    - Real authentication now lives in auth_service.py (Feature #5):
-     salted-hash verification (SRS-071/072) with transparent upgrade of
+     salted-hash verification (SRS-080/082/083) with transparent upgrade of
      the legacy plaintext seed. The login gate below is that check.
      Provider-profile creation/deletion remains out of scope (below).
 
@@ -139,8 +139,10 @@ def _format_timestamp(value, fmt="%Y-%m-%d %H:%M UTC"):
 def _authenticate(username, password):
     """Feature #5 (Authentication): salted-hash check via auth_service.
 
-    Separate from the Jobseeker login form by design (SRS-065, SRS-071);
-    legacy plaintext seeds are upgraded transparently on first login.
+    Dedicated admin login page with no Jobseeker-facing navigation (SRS-079);
+    credentials verified independently of Jobseeker credentials (SRS-080)
+    with constant-time comparison (SRS-083). Legacy plaintext seeds are
+    upgraded transparently on first login.
     """
     import auth_service
     try:
@@ -798,7 +800,7 @@ def show_admin_page():
         </style>
         """, unsafe_allow_html=True)
         st.markdown("## 🔐 Admin Login")
-        st.caption("Separate from the Jobseeker login (SRS-065). Default seed: admin / 123.")
+        st.caption("Separate from the Jobseeker login (SRS-079). Default seed: admin / 123.")
         username = st.text_input("Username", key="admin_username_input")
         password = st.text_input("Password", type="password", key="admin_password_input")
         if st.button("Login"):
@@ -842,7 +844,7 @@ def show_admin_page():
         if st.button("Log Out", use_container_width=True):
             st.session_state["admin_authenticated"] = False
             st.session_state["admin_user"] = ""
-            # Revoke the persistent token (SRS-076) and return to the
+            # Revoke the persistent token (SRS-088) and return to the
             # clean main-page URL on logout.
             try:
                 import auth_service

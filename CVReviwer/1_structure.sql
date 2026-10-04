@@ -51,8 +51,8 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- =====================================================================
 
 -- Admin -----------------------------------------------------------------
--- Feature #5 (Authentication) stores a salted hash here (SRS-072):
---   pbkdf2_sha256$<iterations>$<salt_hex>$<hash_hex>
+-- Feature #5 (Authentication) stores a salted hash here (SRS-082):
+--   pbkdf2_sha256$<iterations>$<salt_hex>$<hash_hex> (260k iterations)
 -- The seed in 2_data.sql is still legacy plaintext ("123") so a fresh
 -- install has a known login; auth_service.authenticate_admin() accepts it
 -- once and transparently upgrades the row to a hash.
@@ -67,7 +67,7 @@ CREATE TABLE admin (
 -- Feature #5 (Authentication). One row per registered account (URS-010).
 -- jobseeker_cv.jobseeker_id references this logically (no FK: legacy rows
 -- carry the "John Doe" stand-in and must keep loading). Passwords are
--- salted hashes only, never plaintext (SRS-072).
+-- salted hashes only, never plaintext (SRS-082).
 CREATE TABLE IF NOT EXISTS jobseeker (
     id            VARCHAR(36)  NOT NULL PRIMARY KEY,
     username      VARCHAR(100) NOT NULL UNIQUE,
