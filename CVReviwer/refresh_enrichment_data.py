@@ -14,7 +14,7 @@ Refreshes three blocks from the live database, in this order:
 WHY ALL THREE, NOT JUST THE ENRICHMENT
 ======================================
 `job_enrichment.job_listing_id` is a foreign key to `job_listing.id`, and
-2_data.sql re-enables FOREIGN_KEY_CHECKS before any INSERT runs. Dumping the
+2_data.sql disables session_replication_role before any INSERT runs. Dumping the
 enrichment alone would produce a file whose enrichment rows reference listings
 the file does not contain — which restores fine on the machine it was dumped
 from, because those listings are already there, and fails outright on a clean
@@ -32,8 +32,8 @@ why there is a "system" admin, why `limit_per_input` is capped at 10. A dump
 would flatten them into positional tuples and lose every explanation. The
 scraper rows also hold the BrightData key, which belongs in exactly one place.
 
-WHY NOT JUST `mysqldump > 2_data.sql`
-=====================================
+WHY NOT JUST `pg_dump > 2_data.sql`
+===================================
 Same reason. 2_data.sql is curated, not generated: it carries the DELETE block
 that makes it safe to re-run and the commentary above each section. This
 script replaces three delimited regions and leaves everything else alone.
@@ -42,14 +42,8 @@ appended twice.
 
 WHAT IT NEEDS
 =============
-`mysqldump` on PATH, and the DB_* variables db.py already reads (from .env or
-the environment). Use the copy that ships with your MySQL *Server*, not the
-one bundled with Workbench — an older dump tool against a newer server can
-emit SQL the server will not take back. On Windows the server binaries are at:
-
-    C:\\Program Files\\MySQL\\MySQL Server <version>\\bin
-
-Add that to PATH, or pass --mysqldump with the full path.
+The same database settings db.py already reads (DATABASE_URL or DB_* from .env).
+Rows are selected through db.query() and re-encoded as PostgreSQL INSERTs.
 
 ORDER OF OPERATIONS
 ===================
@@ -62,15 +56,15 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
-import shutil
-import subprocess
 import sys
-import tempfile
+from datetime import date, datetime
+from decimal import Decimal
 
 from dotenv import load_dotenv
 
 load_dotenv()
+
+import db  # noqa: E402  — after load_dotenv so DB_* is set
 
 DATA_FILE = "2_data.sql"
 
@@ -148,119 +142,60 @@ BLOCKS = [
 ]
 
 
-def _db_settings():
-    return {
-        "host": os.getenv("DB_HOST", "localhost"),
-        "port": os.getenv("DB_PORT", "3306"),
-        "user": os.getenv("DB_USER", "root"),
-        "password": os.getenv("DB_PASSWORD", ""),
-        "database": os.getenv("DB_NAME", "cvision"),
-    }
+def _sql_literal(value):
+    if value is None:
+        return "NULL"
+    if isinstance(value, bool):
+        return "TRUE" if value else "FALSE"
+    if isinstance(value, datetime):
+        return "'" + value.isoformat(sep=" ", timespec="milliseconds") + "'"
+    if isinstance(value, date):
+        return "'" + value.isoformat() + "'"
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, (int, float)):
+        return str(value)
+    s = value if isinstance(value, str) else str(value)
+    return "'" + s.replace("'", "''") + "'"
 
 
-def _resolve_mysqldump(mysqldump):
-    if shutil.which(mysqldump) or os.path.isfile(mysqldump):
-        return
-    raise SystemExit(
-        f"'{mysqldump}' not found. Add your MySQL Server bin directory to PATH,\n"
-        "or pass the full path:\n"
-        '  --mysqldump "C:\\Program Files\\MySQL\\MySQL Server 8.0\\bin\\mysqldump.exe"\n'
-        "Find it with:\n"
-        '  Get-ChildItem "C:\\Program Files" -Filter mysqldump.exe -Recurse '
-        "-ErrorAction SilentlyContinue"
+def dump_table(block):
+    """
+    SELECT every row for the block and render one multi-row PostgreSQL INSERT.
+    """
+    cols = ", ".join(block.columns)
+    rows = db.query(f"SELECT {cols} FROM {block.table} ORDER BY 1")
+    if not rows:
+        return "", 0
+    tuples = []
+    for row in rows:
+        vals = ", ".join(_sql_literal(row.get(c)) for c in block.columns)
+        tuples.append(f"({vals})")
+    insert = (
+        f"INSERT INTO {block.table} ({cols}) VALUES\n"
+        + ",\n".join(tuples)
+        + ";"
     )
+    return insert, len(rows)
 
 
-def run_mysqldump(mysqldump, tables):
-    """
-    Dumps rows only — no CREATE TABLE, no mysqldump banner.
-
-    One invocation for all three tables rather than three, so every block
-    comes from a single --single-transaction snapshot. Dumping separately
-    would let a scraper run land between calls and produce a file whose
-    enrichment references a listing the listing block does not have.
-
-    The password goes through a temporary defaults file rather than
-    --password= on the command line, which would be visible to anyone running
-    `ps` and makes mysqldump print a warning about exactly that.
-    """
-    cfg = _db_settings()
-    fd, defaults_path = tempfile.mkstemp(suffix=".cnf", text=True)
-    try:
-        with os.fdopen(fd, "w", encoding="utf-8") as handle:
-            handle.write(
-                "[client]\n"
-                f"host={cfg['host']}\n"
-                f"port={cfg['port']}\n"
-                f"user={cfg['user']}\n"
-                f"password={cfg['password']}\n"
-            )
-        result = subprocess.run(
-            [
-                mysqldump,
-                f"--defaults-extra-file={defaults_path}",
-                "--no-create-info",
-                "--skip-comments",
-                "--single-transaction",
-                "--complete-insert",
-                "--default-character-set=utf8mb4",
-                cfg["database"],
-                *tables,
-            ],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
+def check_columns(block):
+    """Confirm the live table has exactly the columns the block expects."""
+    rows = db.query(
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_schema = current_schema() AND table_name = %s",
+        (block.table,),
+    )
+    live = {r["column_name"] for r in rows}
+    unexpected = [c for c in live if c not in block.columns]
+    missing = [c for c in block.columns if c not in live]
+    if unexpected or missing:
+        raise SystemExit(
+            f"`{block.table}` does not match 1_structure.sql — nothing written.\n"
+            f"  unexpected columns: {unexpected or 'none'}\n"
+            f"  missing columns:    {missing or 'none'}\n"
+            "Rebuild from 1_structure.sql, then enrich again."
         )
-    finally:
-        os.unlink(defaults_path)
-
-    if result.returncode != 0:
-        raise SystemExit(f"mysqldump failed:\n{(result.stderr or '').strip()}")
-    return result.stdout
-
-
-def split_by_table(dump):
-    """
-    Groups the dump's INSERT statements by table name.
-
-    mysqldump's session-variable scaffolding is dropped — 2_data.sql sets and
-    restores those things itself.
-    """
-    grouped = {}
-    for statement in re.findall(r"^INSERT INTO .*?;\s*$", dump,
-                                flags=re.MULTILINE | re.DOTALL):
-        table = re.search(r"INSERT INTO `([^`]+)`", statement).group(1)
-        grouped.setdefault(table, []).append(statement.rstrip())
-    return grouped
-
-
-def check_columns(block, statements):
-    """
-    Confirms the live table matches 1_structure.sql before anything is written.
-
-    --complete-insert names the columns in every statement, so this catches a
-    schema drift here rather than on someone else's restore. The specific case
-    it was written for: a database created before `translated_description` was
-    dropped still has that column, and a dump carrying it restores cleanly on
-    the machine it came from and fails everywhere else.
-    """
-    for statement in statements:
-        header = statement[: statement.index("VALUES")]
-        columns = re.findall(r"`([^`]+)`", header)[1:]  # first backtick is the table
-        if columns != block.columns:
-            unexpected = [c for c in columns if c not in block.columns]
-            missing = [c for c in block.columns if c not in columns]
-            raise SystemExit(
-                f"`{block.table}` does not match 1_structure.sql — nothing written.\n"
-                f"  unexpected columns: {unexpected or 'none'}\n"
-                f"  missing columns:    {missing or 'none'}\n"
-                "Run drop_translated_description.sql, or rebuild from "
-                "1_structure.sql, then enrich again."
-            )
-
-
-def count_rows(statements):
-    return sum(s.count("),(") + 1 for s in statements)
 
 
 def splice(existing, block, rendered):
@@ -302,25 +237,20 @@ def main():
                         help=f"file to write (default: {DATA_FILE})")
     parser.add_argument("--data-file", default=DATA_FILE,
                         help=f"file to read (default: {DATA_FILE})")
-    parser.add_argument("--mysqldump", default="mysqldump",
-                        help="path to mysqldump if it is not on PATH")
     args = parser.parse_args()
 
     if not os.path.isfile(args.data_file):
         raise SystemExit(f"{args.data_file} not found. Run this from the project root.")
 
-    _resolve_mysqldump(args.mysqldump)
-    cfg = _db_settings()
-    print(f"Dumping {', '.join(b.table for b in BLOCKS)} from {cfg['database']}...")
-
-    grouped = split_by_table(run_mysqldump(args.mysqldump, [b.table for b in BLOCKS]))
+    print(f"Dumping {', '.join(b.table for b in BLOCKS)} from the database...")
+    print(f"  ({db.describe_settings()})")
 
     counts, rendered = {}, {}
     for block in BLOCKS:
-        statements = grouped.get(block.table, [])
-        check_columns(block, statements)
-        counts[block.table] = count_rows(statements)
-        rendered[block.table] = block.render("\n".join(statements))
+        check_columns(block)
+        insert, n = dump_table(block)
+        counts[block.table] = n
+        rendered[block.table] = block.render(insert)
         print(f"  {block.table:<16} {counts[block.table]:>5} rows")
 
     if counts["job_listing"] == 0:
@@ -349,20 +279,21 @@ def main():
               f"{len(updated):,} bytes. Nothing written (--check).")
         return
 
-    if args.out == args.data_file:
-        backup = args.data_file + ".bak"
-        shutil.copyfile(args.data_file, backup)
-        print(f"\n  previous version saved as {backup}")
-
-    with open(args.out, "w", encoding="utf-8", newline="\n") as handle:
+    backup = args.data_file + ".bak"
+    with open(backup, "w", encoding="utf-8") as handle:
+        handle.write(existing)
+    with open(args.out, "w", encoding="utf-8") as handle:
         handle.write(updated)
-    print(f"  wrote {args.out} ({len(updated):,} bytes)")
-
-    print("\nRestore now needs no OpenAI calls. Prove it on a clean rebuild:")
-    print("  mysqlsh --sql -u root -p -h localhost --file 1_structure.sql")
-    print(f"  mysqlsh --sql -u root -p -h localhost --file {args.out}")
-    print("  python verify_integration.py --no-ai")
+    print(f"\n  Wrote {args.out} ({len(updated):,} bytes).")
+    print(f"  Previous version kept as {backup}.")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        main()
+    except db.DatabaseError as ex:
+        print(f"\n  Database error: {ex}", file=sys.stderr)
+        detail = getattr(ex, "detail", None)
+        if detail:
+            print(f"  {detail}", file=sys.stderr)
+        raise SystemExit(1)

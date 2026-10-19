@@ -158,13 +158,13 @@ def save_enrichment(job_listing_id, fields):
              experience_years, work_mode, benefits,
              embedding, embedding_model, embedding_dim, enriched_at)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE
-            skills = VALUES(skills), education = VALUES(education),
-            education_requirement = VALUES(education_requirement),
-            experience_years = VALUES(experience_years), work_mode = VALUES(work_mode),
-            benefits = VALUES(benefits),
-            embedding = VALUES(embedding), embedding_model = VALUES(embedding_model),
-            embedding_dim = VALUES(embedding_dim), enriched_at = VALUES(enriched_at)
+        ON CONFLICT (job_listing_id) DO UPDATE SET
+            skills = EXCLUDED.skills, education = EXCLUDED.education,
+            education_requirement = EXCLUDED.education_requirement,
+            experience_years = EXCLUDED.experience_years, work_mode = EXCLUDED.work_mode,
+            benefits = EXCLUDED.benefits,
+            embedding = EXCLUDED.embedding, embedding_model = EXCLUDED.embedding_model,
+            embedding_dim = EXCLUDED.embedding_dim, enriched_at = EXCLUDED.enriched_at
         """,
         (
             job_listing_id,
@@ -600,7 +600,7 @@ def main():
         detail = getattr(ex, "detail", None)
         if detail:
             print(f"  {detail}", file=sys.stderr)
-        print("\n  Check the DB_* values in .env, that MySQL is running, and "
+        print("\n  Check the DB_* values / DATABASE_URL in .env, that PostgreSQL is reachable, and "
               "that schema_f2.sql has been applied.", file=sys.stderr)
         return 1
     except FileNotFoundError as ex:

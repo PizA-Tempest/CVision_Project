@@ -48,12 +48,12 @@ python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-This pulls in streamlit, mysql-connector-python, pikepdf, PyPDF2, openai, python-dotenv, sentence-transformers (with PyTorch), tqdm, requests, and torchvision — expect a few hundred MB.
+This pulls in streamlit, psycopg2-binary, pikepdf, PyPDF2, openai, python-dotenv, sentence-transformers (with PyTorch), tqdm, requests, and torchvision — expect a few hundred MB.
 
 Verify:
 
 ```powershell
-python -c "import pikepdf, PyPDF2, streamlit, mysql.connector, openai; print('all imports OK')"
+python -c "import pikepdf, PyPDF2, streamlit, psycopg2, openai; print('all imports OK')"
 ```
 
 If `pikepdf` fails to install, see [`CVReviwer/SETUP.md`](CVReviwer/SETUP.md) §3.
@@ -66,20 +66,16 @@ Only needed if you use the JS packages from `package.json`; the Python app does 
 npm install
 ```
 
-## 5. Start MySQL and create the database
+## 5. Create the database (Supabase free)
 
-Make sure the MySQL service is running and port 3306 is open:
+Use a free [Supabase](https://supabase.com) project (PostgreSQL). Copy the
+connection URI from **Project Settings → Database → Connection string**.
 
-```powershell
-Get-Service *mysql* | Select-Object Name, Status
-Test-NetConnection -ComputerName localhost -Port 3306
-```
-
-Then create the schema and seed data:
+Run `1_structure.sql` then `2_data.sql` in the Supabase SQL Editor, or with psql:
 
 ```powershell
-mysqlsh --sql -u root -p -h localhost --file 1_structure.sql
-mysqlsh --sql -u root -p -h localhost --file 2_data.sql
+psql "$env:DATABASE_URL" -f CVReviwer/1_structure.sql
+psql "$env:DATABASE_URL" -f CVReviwer/2_data.sql
 ```
 
 Both files are destructive (they drop/clear tables). **`2_data.sql` contains live API credentials — do not share it.**
@@ -91,11 +87,7 @@ Create a file named `.env` beside `app.py`:
 ```
 OPENAI_API_KEY=sk-your-key-here
 
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your-mysql-root-password
-DB_NAME=cvision
+DATABASE_URL=postgresql://postgres:[password]@aws-0-xxx.pooler.supabase.com:5432/postgres
 ```
 
 **Never commit this file** — it holds a billable API key and your DB password.

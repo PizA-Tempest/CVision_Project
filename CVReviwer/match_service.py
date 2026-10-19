@@ -719,7 +719,7 @@ def _is_system_outdated(row) -> bool:
 
 
 def _decode_json(value):
-    """job_enrichment's JSON columns arrive as strings from mysql-connector."""
+    """job_enrichment's JSON columns arrive as plain strings from psycopg2."""
     if isinstance(value, (list, dict)) or value is None:
         return value
     try:

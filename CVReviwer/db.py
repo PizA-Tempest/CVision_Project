@@ -1,8 +1,8 @@
 """
 db.py — Storage Layer
 
-Shared MySQL connection pooling and transaction handling used by
-scraper_service.py, job_service.py and log_service.py. This is the
+Shared PostgreSQL (Supabase) connection pooling and transaction handling
+used by scraper_service.py, job_service.py and log_service.py. This is the
 only module in CVision that opens connections and commits — every
 service module goes through query() / execute() / transaction() below
 rather than connecting for itself.
@@ -19,21 +19,25 @@ Implements M-029 (get_connection), M-030 (query), M-031 (execute),
 and M-032 (transaction) from the Method Description.
 
 Connection settings are read from environment variables so credentials
-never live in source:
-    DB_HOST      default "localhost"
-    DB_PORT      default "3306"
-    DB_USER      default "root"
-    DB_PASSWORD  default ""
-    DB_NAME      default "cvision"
-    DB_POOL_SIZE default "5"
+never live in source. Prefer DATABASE_URL (the Supabase connection
+string); the DB_* variables remain as a fallback:
+
+    DATABASE_URL   postgresql://user:pass@host:5432/dbname?sslmode=require
+    DB_HOST        default "localhost"
+    DB_PORT        default "5432"
+    DB_USER        default "postgres"
+    DB_PASSWORD    default ""
+    DB_NAME        default "cvision"
+    DB_POOL_SIZE   default "5"
 """
 
 import os
 import threading
 from contextlib import contextmanager
 
-import mysql.connector
-from mysql.connector import pooling
+import psycopg2
+from psycopg2 import pool as pg_pool
+from psycopg2.extras import RealDictCursor
 
 # Loaded here, at import, rather than by each entry point.
 #
@@ -43,7 +47,7 @@ from mysql.connector import pooling
 # — a database read — before its own load_dotenv(), and verify_integration.py
 # tested the connection thousands of characters before loading .env. Both
 # failed with "Unable to connect to the database." on a perfectly healthy
-# MySQL, because DB_PASSWORD had not been read yet.
+# database, because DB_PASSWORD had not been read yet.
 #
 # Optional: a deployment that sets real environment variables needs no .env,
 # and python-dotenv never overrides variables that are already set.
@@ -81,31 +85,47 @@ _pool_lock = threading.Lock()
 def describe_settings():
     """
     The connection settings in effect, for error messages. Reports whether a
-    password is set, never its value.
+    password is set, never its value. When DATABASE_URL is present only the
+    host/port/database portion is shown.
     """
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        safe = url
+        if "@" in url and "://" in url:
+            prefix, rest = url.split("://", 1)
+            if "@" in rest:
+                creds, hostpart = rest.rsplit("@", 1)
+                user = creds.split(":", 1)[0]
+                safe = f"{prefix}://{user}:***@{hostpart}"
+        return f"url={safe}"
     return (f"host={os.environ.get('DB_HOST', 'localhost')} "
-            f"port={os.environ.get('DB_PORT', '3306')} "
-            f"user={os.environ.get('DB_USER', 'root')} "
+            f"port={os.environ.get('DB_PORT', '5432')} "
+            f"user={os.environ.get('DB_USER', 'postgres')} "
             f"database={os.environ.get('DB_NAME', 'cvision')} "
             f"password={'set' if os.environ.get('DB_PASSWORD') else 'NOT SET'}")
 
 
-def _pool_config():
-    return {
-        "pool_name": _POOL_NAME,
-        "pool_size": int(os.environ.get("DB_POOL_SIZE", "5")),
-        "host": os.environ.get("DB_HOST", "localhost"),
-        "port": int(os.environ.get("DB_PORT", "3306")),
-        "user": os.environ.get("DB_USER", "root"),
-        "password": os.environ.get("DB_PASSWORD", ""),
-        "database": os.environ.get("DB_NAME", "cvision"),
-        "autocommit": False,
-    }
+def _dsn():
+    """Build the connection DSN. DATABASE_URL wins when set (Supabase)."""
+    url = os.environ.get("DATABASE_URL")
+    if url:
+        if "sslmode=" not in url:
+            sep = "&" if "?" in url else "?"
+            url = f"{url}{sep}sslmode=require"
+        return url
+    host = os.environ.get("DB_HOST", "localhost")
+    port = os.environ.get("DB_PORT", "5432")
+    user = os.environ.get("DB_USER", "postgres")
+    password = os.environ.get("DB_PASSWORD", "")
+    dbname = os.environ.get("DB_NAME", "cvision")
+    sslmode = os.environ.get("DB_SSLMODE", "prefer")
+    return (f"host={host} port={port} user={user} "
+            f"password={password} dbname={dbname} sslmode={sslmode}")
 
 
 def get_connection():
     """
-    M-029 — Opens, or reuses, the pooled MySQL connection shared by
+    M-029 — Opens, or reuses, the pooled PostgreSQL connection shared by
     every service module.
 
     The pool itself is created once per process, the first time any
@@ -130,19 +150,31 @@ def get_connection():
         with _pool_lock:
             if _pool is None:
                 try:
-                    _pool = pooling.MySQLConnectionPool(**_pool_config())
-                except mysql.connector.Error as ex:
+                    _pool = pg_pool.ThreadedConnectionPool(
+                        1,
+                        int(os.environ.get("DB_POOL_SIZE", "5")),
+                        dsn=_dsn(),
+                    )
+                except psycopg2.Error as ex:
                     raise DatabaseError(
                         "Unable to connect to the database.",
                         detail=f"{ex}  [{describe_settings()}]",
                     ) from ex
     try:
-        return _pool.get_connection()
-    except mysql.connector.Error as ex:
+        return _pool.getconn()
+    except psycopg2.Error as ex:
         raise DatabaseError(
             "Unable to connect to the database.",
             detail=f"{ex}  [{describe_settings()}]",
         ) from ex
+
+
+def _putconn(conn, close=False):
+    if _pool is not None and conn is not None:
+        try:
+            _pool.putconn(conn, close=close)
+        except Exception:
+            pass
 
 
 def query(sql, params=()):
@@ -165,16 +197,21 @@ def query(sql, params=()):
     """
     conn = get_connection()
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cursor.execute(sql, params)
             return cursor.fetchall()
         finally:
             cursor.close()
-    except mysql.connector.Error as ex:
+    except psycopg2.Error as ex:
+        conn.rollback()
         raise DatabaseError("Unable to read from the database.", detail=str(ex)) from ex
     finally:
-        conn.close()  # returns the connection to the pool
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        _putconn(conn)
 
 
 def execute(sql, params=()):
@@ -204,11 +241,11 @@ def execute(sql, params=()):
             return cursor.rowcount
         finally:
             cursor.close()
-    except mysql.connector.Error as ex:
+    except psycopg2.Error as ex:
         conn.rollback()
         raise DatabaseError(f"Write failed: {ex}") from ex
     finally:
-        conn.close()
+        _putconn(conn)
 
 
 @contextmanager
@@ -240,4 +277,4 @@ def transaction():
         conn.rollback()
         raise DatabaseError(f"Transaction failed and was rolled back: {ex}") from ex
     finally:
-        conn.close()
+        _putconn(conn)

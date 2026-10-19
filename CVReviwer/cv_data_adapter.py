@@ -68,6 +68,17 @@ class CVDataCorruptedException(Exception):
     """
 
 
+class DatabaseException(Exception):
+    """
+    Raised when a CV-ownership write cannot be completed — missing
+    identifiers or the database rejecting the write (Feature #5,
+    UT-5-21). Deliberately local to this module rather than imported
+    from cv_upload: this file must not import cv_upload (see the
+    decoupling note above), and match_service's DatabaseException
+    belongs to Feature 2's layer.
+    """
+
+
 def _load_registry() -> list[dict[str, Any]]:
     """
     Reads the whole CV registry. Mirrors Feature 3's `_load_cvs()`, including
@@ -224,11 +235,10 @@ def record_cv_ownership(jobseeker_id, cv_id, original_filename=None, uploaded_at
     Feature 2's document covers ownership. Called on every upload so the rows
     accumulate from now on and Feature 5 inherits a populated index.
 
-    Best-effort by design: a failure here is swallowed and reported as False.
-    Losing the ownership index costs a future convenience feature; raising
-    would abort an upload that has already succeeded and been stored by
-    Feature 3, which is a far worse outcome for the Jobseeker in front of the
-    screen.
+    Owned by Feature 5 (UT-5-21): missing identifiers or a rejected
+    database write raise DatabaseException so silent ownership loss is
+    impossible. Callers on the upload path (app.process_cv) catch it to
+    keep a stored upload succeeding even when the index write fails.
 
     Parameters:
         jobseeker_id: str — stand-in identifier until Feature 5 supplies one.
@@ -238,19 +248,23 @@ def record_cv_ownership(jobseeker_id, cv_id, original_filename=None, uploaded_at
 
     Returns:
         bool — True when the row was written.
+
+    Throws:
+        DatabaseException — jobseeker_id or cv_id is missing, or the
+            database write fails.
     """
     if not jobseeker_id or not cv_id:
-        return False
+        raise DatabaseException("jobseeker_id and cv_id are both required.")
     import db
     try:
         db.execute(
             """
             INSERT INTO jobseeker_cv (id, jobseeker_id, cv_id, original_filename, uploaded_at)
             VALUES (%s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                jobseeker_id = VALUES(jobseeker_id),
-                original_filename = VALUES(original_filename),
-                uploaded_at = VALUES(uploaded_at)
+            ON CONFLICT (cv_id) DO UPDATE SET
+                jobseeker_id = EXCLUDED.jobseeker_id,
+                original_filename = EXCLUDED.original_filename,
+                uploaded_at = EXCLUDED.uploaded_at
             """,
             (
                 str(uuid.uuid4()),
@@ -261,8 +275,8 @@ def record_cv_ownership(jobseeker_id, cv_id, original_filename=None, uploaded_at
             ),
         )
         return True
-    except Exception:
-        return False
+    except Exception as ex:
+        raise DatabaseException(f"Failed to record CV ownership: {ex}") from ex
 
 
 def list_cv_ids_for(jobseeker_id) -> list[dict]:
@@ -273,13 +287,18 @@ def list_cv_ids_for(jobseeker_id) -> list[dict]:
     Reads the jobseeker_cv index, then confirms each id still exists in
     Feature 3's registry: cvs.json is authoritative, and a CV deleted there
     should disappear from the picker even though the index row survives.
+    Only CVs with usable parsed data are listed (SRS-086/SRS-087, UT-5-22):
+    an upload whose extraction never ran or produced nothing is skipped
+    here rather than offered to the picker. At most 20 ids are returned,
+    newest first.
 
     Parameters:
         jobseeker_id: str
 
     Returns:
-        list[dict] — {cv_id, original_filename, uploaded_at}; [] when the
-        Jobseeker has none, or the index is unavailable.
+        list[dict] — {cv_id, original_filename, uploaded_at}; at most 20,
+        newest first; [] when the Jobseeker has none, or the index is
+        unavailable.
     """
     if not jobseeker_id:
         return []
@@ -293,4 +312,15 @@ def list_cv_ids_for(jobseeker_id) -> list[dict]:
     except Exception:
         return []
     known = {r.get("id") for r in _load_registry()}
-    return [r for r in rows if r.get("cv_id") in known]
+    picked = []
+    for r in rows:
+        if r.get("cv_id") not in known:
+            continue
+        try:
+            get_extracted_cv_data(r.get("cv_id"))
+        except CVDataCorruptedException:
+            continue
+        picked.append(r)
+        if len(picked) >= 20:
+            break
+    return picked

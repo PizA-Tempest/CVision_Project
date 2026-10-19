@@ -93,7 +93,7 @@ def format_display_datetime(value):
     it as these display strings. Storing a real datetime (or NULL) in
     the column and formatting here — at the boundary where the tests
     observe it — satisfies both documents at once, instead of writing
-    "-" into a DATETIME column, which MySQL rejects outright.
+    "-" into a timestamp column, which PostgreSQL rejects outright.
     """
     dt = coerce_datetime(value)
     return dt.strftime("%Y-%m-%d %H:%M UTC") if dt else "-"
@@ -175,7 +175,7 @@ def _extract_error_message(response):
 
 def _decode_json_columns(row, keys):
     """provider_profile / scraper JSON columns come back from
-    mysql-connector as plain strings, not auto-decoded dicts/lists —
+    psycopg2 as plain strings, not auto-decoded dicts/lists —
     this decodes the given keys of row in place where present."""
     for key in keys:
         value = row.get(key)
@@ -895,7 +895,7 @@ def persist_schedule(scraper_id, schedule):
 
         The same error is raised when scraper_id matches no stored
         scraper. That is exactly what a real schema does — the write
-        would violate schedule.scraper_id's foreign key, MySQL would
+        would violate schedule.scraper_id's foreign key, PostgreSQL would
         reject it, and db.execute would surface it as a DatabaseError
         that this method re-raises with that message. Failing here is
         deliberate: the previous behaviour silently wrote an orphan
@@ -913,10 +913,10 @@ def persist_schedule(scraper_id, schedule):
             """
             INSERT INTO schedule (id, scraper_id, mode, run_at, interval_type, enabled, last_auto_run)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                mode = VALUES(mode), run_at = VALUES(run_at),
-                interval_type = VALUES(interval_type), enabled = VALUES(enabled),
-                last_auto_run = VALUES(last_auto_run)
+            ON CONFLICT (scraper_id) DO UPDATE SET
+                mode = EXCLUDED.mode, run_at = EXCLUDED.run_at,
+                interval_type = EXCLUDED.interval_type, enabled = EXCLUDED.enabled,
+                last_auto_run = EXCLUDED.last_auto_run
             """,
             (
                 str(uuid.uuid4()),
@@ -924,7 +924,7 @@ def persist_schedule(scraper_id, schedule):
                 schedule.get("mode"),
                 # C1: run_at / last_auto_run are Timestamp columns. The UI
                 # hands them over as ISO-Z strings ("2026-07-01T08:00:00Z"),
-                # whose trailing "Z" MySQL will not accept in a DATETIME —
+                # whose trailing "Z" a timestamp column may reject —
                 # coerced to real datetimes here, and rendered back to ISO-Z
                 # in schedule_out below.
                 coerce_datetime(schedule.get("run_at")),

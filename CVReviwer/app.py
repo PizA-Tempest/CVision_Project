@@ -90,8 +90,8 @@ load_dotenv()
 # Mirror them into os.environ so db.py and the OpenAI calls (os.getenv)
 # work unchanged in both places. Local .env wins when both are set.
 try:
-    for _k in ("OPENAI_API_KEY", "DB_HOST", "DB_PORT",
-               "DB_USER", "DB_PASSWORD", "DB_NAME"):
+    for _k in ("OPENAI_API_KEY", "DATABASE_URL",
+               "DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"):
         try:
             _v = st.secrets.get(_k)
         except Exception:
@@ -343,10 +343,16 @@ def process_cv(uploaded_file, jobseeker_id=None):
     # caller, since Streamlit does not surface stdout.
     cv_upload.displayUploadFeedback(upload["fileName"], True)
 
-    # Feature 2/5 ownership index. Best-effort: never blocks the upload.
-    cv_data_adapter.record_cv_ownership(
-        jobseeker_id, cv_file_id, upload.get("fileName")
-    )
+    # Feature 2/5 ownership index. A failed index write must never block an
+    # upload that has already succeeded and been stored (UT-2-14-005's
+    # "survivable" rule); record_cv_ownership raises DatabaseException so
+    # the failure is visible, and it is contained here.
+    try:
+        cv_data_adapter.record_cv_ownership(
+            jobseeker_id, cv_file_id, upload.get("fileName")
+        )
+    except cv_data_adapter.DatabaseException:
+        pass
 
     # M-03-06
     raw_text = cv_upload.extractTextFromCV(cv_file_id)
@@ -368,7 +374,16 @@ def process_cv(uploaded_file, jobseeker_id=None):
     embed.verifySensitiveDataProtection(masked.sanitizedText, detected)
 
     # Stands in for M-03-14 + M-03-07 (both stubs). Masked text only.
-    result = _extract_structured_info(cv_file_id, masked.sanitizedText)
+    # Any transport/SDK failure here means the External AI Service is
+    # unreachable or unresponsive; surface it as the documented
+    # AIServiceUnavailableException so the page maps it to the
+    # "temporarily unavailable" message instead of a generic error.
+    try:
+        result = _extract_structured_info(cv_file_id, masked.sanitizedText)
+    except Exception as ex:
+        raise embed.AIServiceUnavailableException(
+            f"AI Service unavailable: {ex}"
+        ) from ex
 
     # M-03-08 — raises NoExtractionResultException when all three are empty
     cv_upload.validateExtractionResult(result)

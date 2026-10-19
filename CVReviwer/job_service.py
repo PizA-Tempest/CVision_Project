@@ -211,17 +211,17 @@ def _write_listing_rows(cursor, jobs):
                  job_details, job_employment_type, job_posted_date, salary,
                  outdated_manual)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                scraper_id = VALUES(scraper_id),
-                url = VALUES(url),
-                job_title = VALUES(job_title),
-                company_name = VALUES(company_name),
-                job_location = VALUES(job_location),
-                job_details = VALUES(job_details),
-                job_employment_type = VALUES(job_employment_type),
-                job_posted_date = VALUES(job_posted_date),
-                salary = VALUES(salary),
-                outdated_manual = VALUES(outdated_manual)
+            ON CONFLICT (id) DO UPDATE SET
+                scraper_id = EXCLUDED.scraper_id,
+                url = EXCLUDED.url,
+                job_title = EXCLUDED.job_title,
+                company_name = EXCLUDED.company_name,
+                job_location = EXCLUDED.job_location,
+                job_details = EXCLUDED.job_details,
+                job_employment_type = EXCLUDED.job_employment_type,
+                job_posted_date = EXCLUDED.job_posted_date,
+                salary = EXCLUDED.salary,
+                outdated_manual = EXCLUDED.outdated_manual
             """,
             (
                 listing_id,

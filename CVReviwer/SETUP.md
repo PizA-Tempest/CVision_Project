@@ -31,7 +31,7 @@ everything else on the machine — `sentence-transformers` alone pulls in
 PyTorch, which is large.
 
 ```powershell
-cd E:\MyProject\CVReviwer
+cd CVReviwer
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
@@ -64,7 +64,7 @@ Expect a few hundred MB — `sentence-transformers` brings PyTorch with it.
 **Check it worked:**
 
 ```powershell
-python -c "import pikepdf, PyPDF2, streamlit, mysql.connector, openai; print('all imports OK')"
+python -c "import pikepdf, PyPDF2, streamlit, psycopg2, openai; print('all imports OK')"
 ```
 
 <details>
@@ -86,38 +86,27 @@ without it.
 
 ---
 
-## 4. MySQL
+## 4. Database (Supabase free tier)
 
-You need the **server**, not just Workbench or Shell — those are clients.
-Check what is running:
+The app uses **PostgreSQL** via Supabase (free). Aiven is no longer used.
 
-```powershell
-Get-Service *mysql* | Select-Object Name, Status
-```
+1. Create a free project at [supabase.com](https://supabase.com).
+2. Open **Project Settings → Database → Connection string → URI**.
+3. Copy the URI into `.env` as `DATABASE_URL` (see section 6).
 
-- A service listed as `Running` → continue.
-- Listed but `Stopped` → `Start-Service MySQL80` from an elevated PowerShell.
-- Nothing listed → install the MySQL Server component from
-  dev.mysql.com/downloads/installer/. Keep port **3306**, set a root
-  password, and let it install as a Windows service.
-
-Confirm the port is actually open:
-
-```powershell
-Test-NetConnection -ComputerName localhost -Port 3306
-```
-
-`TcpTestSucceeded : True` means you are ready.
+For local development without Supabase, install PostgreSQL and use the
+`DB_HOST` / `DB_PORT` / `DB_USER` / `DB_PASSWORD` / `DB_NAME` fallbacks in
+`.env` instead.
 
 ---
 
 ## 5. Create the database
 
-Two files: tables first, then the data.
+Run the SQL files in the Supabase **SQL Editor**, or with `psql`:
 
 ```powershell
-mysqlsh --sql -u root -p -h localhost --file 1_structure.sql
-mysqlsh --sql -u root -p -h localhost --file 2_data.sql
+psql "$env:DATABASE_URL" -f 1_structure.sql
+psql "$env:DATABASE_URL" -f 2_data.sql
 ```
 
 `1_structure.sql` creates nine tables and inserts nothing.
@@ -148,7 +137,8 @@ away along with their enrichment. Bake yours into the file first — see
 Verify:
 
 ```powershell
-mysqlsh --sql -u root -p -h localhost -e "USE cvision; SHOW TABLES; SELECT COUNT(*) AS listings FROM job_listing; SELECT COUNT(*) AS enriched FROM job_enrichment;"
+psql "$env:DATABASE_URL" -c "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';"
+psql "$env:DATABASE_URL" -c "SELECT COUNT(*) AS listings FROM job_listing; SELECT COUNT(*) AS enriched FROM job_enrichment;"
 ```
 
 Nine tables — `admin`, `provider_profile`, `scraper`, `schedule`,
@@ -162,10 +152,14 @@ Create a file named `.env` beside `app.py`:
 ```
 OPENAI_API_KEY=sk-your-key-here
 
+# Supabase (preferred)
+DATABASE_URL=postgresql://postgres:[password]@aws-0-xxx.pooler.supabase.com:5432/postgres
+
+# Or local Postgres fallback
 DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your-mysql-root-password
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=your-postgres-password
 DB_NAME=cvision
 ```
 
@@ -196,8 +190,7 @@ Everything should pass, including **enrichment coverage** at `20/20` and
 **active listings for matching** at 19 — the twentieth listing is more than
 365 days old and is filtered out by the SRS-029 rule, which is correct.
 
-If the database checks fail, the `DB_*` values in `.env` are wrong or MySQL is
-not running. If enrichment coverage is below 20, `2_data.sql` did not finish —
+If the database checks fail, `DATABASE_URL` (or the `DB_*` values) in `.env` are wrong or the database is unreachable. If enrichment coverage is below 20, `2_data.sql` did not finish —
 re-run it rather than reaching for `enrich_jobs.py`, which would spend API
 calls regenerating rows the file already contains.
 
@@ -359,8 +352,8 @@ when the prompt or the schema has changed.
 The point of the exercise, and free:
 
 ```powershell
-mysqlsh --sql -u root -p -h localhost --file 1_structure.sql
-mysqlsh --sql -u root -p -h localhost --file 2_data.sql
+psql "$env:DATABASE_URL" -f 1_structure.sql
+psql "$env:DATABASE_URL" -f 2_data.sql
 python verify_integration.py --no-ai
 ```
 
@@ -382,34 +375,10 @@ It also *warns* — but still writes — when some listings have no enrichment
 row, since shipping them un-enriched is occasionally what you want. They will
 be invisible to matching until enriched.
 
-### If `mysqldump` is not found
+### If `refresh_enrichment_data.py` cannot reach the database
 
-Use the copy that ships with your MySQL **Server**, not the one bundled with
-Workbench — an older dump tool against a newer server can emit SQL the server
-will not take back. Find it:
-
-```powershell
-Get-ChildItem "C:\Program Files" -Filter mysqldump.exe -Recurse -ErrorAction SilentlyContinue | Select-Object FullName
-```
-
-Then add that directory to PATH — note the version number is whatever your
-install reports, not necessarily 8.0:
-
-```powershell
-$bin = "C:\Program Files\MySQL\MySQL Server 8.0\bin"   # use your actual path
-$old = [Environment]::GetEnvironmentVariable("Path", "User")
-if ($old -notlike "*$bin*") {
-    [Environment]::SetEnvironmentVariable("Path", "$old;$bin", "User")
-}
-$env:Path += ";$bin"      # the registry write only reaches NEW terminals
-mysqldump --version
-```
-
-Or skip PATH entirely and pass the path in:
-
-```powershell
-python refresh_enrichment_data.py --mysqldump "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqldump.exe"
-```
+The script dumps rows through `db.query()` using `DATABASE_URL` / `DB_*`
+from `.env`. There is no separate dump binary to install.
 
 ---
 

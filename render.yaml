@@ -11,16 +11,9 @@ services:
         value: 3.12.10
       - key: OPENAI_API_KEY
         sync: false
-      - key: DB_HOST
+      # Supabase free tier — paste the URI from Project Settings → Database
+      - key: DATABASE_URL
         sync: false
-      - key: DB_PORT
-        value: "3306"
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_NAME
-        value: cvision
 
 # Free plan: no persistent disk (uploads/ resets on restart).
-# Paid 1c-2g + disk block restores persistence + RAM for torch.
+# Supabase free tier replaces Aiven for the PostgreSQL database.

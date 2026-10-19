@@ -191,8 +191,8 @@ def ensure_auth_tables() -> None:
             username      VARCHAR(100) NOT NULL UNIQUE,
             email         VARCHAR(255) NOT NULL UNIQUE,
             password_hash VARCHAR(255) NOT NULL,
-            created_at    DATETIME(3)  NULL
-        ) ENGINE=InnoDB
+            created_at    TIMESTAMPTZ  NULL
+        )
         """
     )
     db.execute(
@@ -201,12 +201,16 @@ def ensure_auth_tables() -> None:
             token        VARCHAR(128) NOT NULL PRIMARY KEY,
             jobseeker_id VARCHAR(36)  NULL,
             admin_id     VARCHAR(36)  NULL,
-            created_at   DATETIME(3)  NULL,
-            expires_at   DATETIME(3)  NOT NULL,
-            KEY idx_auth_js (jobseeker_id),
-            KEY idx_auth_admin (admin_id)
-        ) ENGINE=InnoDB
+            created_at   TIMESTAMPTZ  NULL,
+            expires_at   TIMESTAMPTZ  NOT NULL
+        )
         """
+    )
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_auth_js ON auth_session (jobseeker_id)"
+    )
+    db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_auth_admin ON auth_session (admin_id)"
     )
 
 

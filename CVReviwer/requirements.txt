@@ -6,8 +6,8 @@
 # Web interface — both the user panel and the admin panel
 streamlit
 
-# MySQL driver used by db.py (Features 1 and 2)
-mysql-connector-python
+# PostgreSQL driver used by db.py (Supabase / local Postgres)
+psycopg2-binary
 
 # CV upload and PDF handling (Feature 3)
 pikepdf

@@ -198,37 +198,41 @@ def main():
     try:
         db.query("SELECT 1")
         record(PASS, "database reachable (M-01-29)",
-               f"{os.environ.get('DB_USER', 'root')}@"
-               f"{os.environ.get('DB_HOST', 'localhost')}/"
-               f"{os.environ.get('DB_NAME', 'cvision')}")
+               db.describe_settings())
     except Exception as ex:
         record(FAIL, "database reachable (M-01-29)",
                getattr(ex, "detail", None) or str(ex))
-        print("\n  Check the DB_* values in .env and that MySQL is running.")
+        print("\n  Check the DB_* values in .env (or DATABASE_URL) and that the database is reachable.")
         print(f"  Settings in effect: {db.describe_settings()}")
         return _summary()
 
-    tables = {row["TABLE_NAME"].lower() if "TABLE_NAME" in row else
-              list(row.values())[0].lower()
+    def _col(row, name):
+        for key in (name.lower(), name.upper()):
+            if key in row:
+                return row[key]
+        return list(row.values())[0]
+
+    tables = {_col(row, "table_name").lower()
               for row in db.query(
-                  "SELECT TABLE_NAME FROM information_schema.tables "
-                  "WHERE table_schema = DATABASE()")}
+                  "SELECT table_name FROM information_schema.tables "
+                  "WHERE table_schema = current_schema() "
+                  "AND table_type = 'BASE TABLE'")}
 
     for table in ("admin", "provider_profile", "scraper", "schedule",
                   "job_listing", "log_entry"):
         record(PASS if table in tables else FAIL,
                f"Feature 1 table `{table}`",
-               "" if table in tables else "run schema.sql")
+               "" if table in tables else "run 1_structure.sql")
 
     for table in ("job_enrichment", "job_match", "jobseeker_cv"):
         record(PASS if table in tables else FAIL,
                f"Feature 2 table `{table}`",
-               "" if table in tables else "run schema_f2.sql")
+               "" if table in tables else "run 1_structure.sql")
 
     if "education_requirement" not in {
-        c["COLUMN_NAME"] if "COLUMN_NAME" in c else list(c.values())[0]
-        for c in db.query("SELECT COLUMN_NAME FROM information_schema.columns "
-                          "WHERE table_schema = DATABASE() AND table_name = 'job_enrichment'")
+        _col(c, "column_name")
+        for c in db.query("SELECT column_name FROM information_schema.columns "
+                          "WHERE table_schema = current_schema() AND table_name = 'job_enrichment'")
     }:
         record(WARN, "job_enrichment.education_requirement present",
                "older schema; re-run schema_f2.sql for structured education matching")
