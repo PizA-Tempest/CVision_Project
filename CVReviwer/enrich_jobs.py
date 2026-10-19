@@ -489,17 +489,18 @@ def enrich(only_missing=True, limit=None, model=None, progress=None):
     # load, and nothing above needs it. (embed.py imports SentenceTransformer
     # at module level, which is why reaching any M-03 method loads it too —
     # noted in TBD_and_Conflicts.md Part 4.)
-    from openai import AsyncOpenAI
+    import ai_client
     try:
         from dotenv import load_dotenv
         load_dotenv()
     except ImportError:
         pass
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
+    has_openai = bool(os.getenv("OPENAI_API_KEY"))
+    has_gemini = bool(os.getenv("GEMINI_API_KEY"))
+    if not has_openai and not has_gemini:
         raise EnrichmentError(
-            "OPENAI_API_KEY is not set. Put it in .env or the environment.")
+            "No AI key set. Put OPENAI_API_KEY or GEMINI_API_KEY in .env.")
 
     # The embedding model is loaded BEFORE any API call, not after.
     #
@@ -529,7 +530,7 @@ def enrich(only_missing=True, limit=None, model=None, progress=None):
                 f"{hint} No API calls were made, so nothing has been spent."
             ) from ex
 
-    client = AsyncOpenAI(api_key=api_key)
+    client, _model = ai_client.get_async_client()
     report(0, len(listings), "Extracting structured fields...")
     extracted = dict(asyncio.run(_extract_all(client, listings)))
 

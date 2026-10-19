@@ -328,14 +328,15 @@ def main():
         record(SKIP, "extraction stored (M-03-08, M-03-09)")
         return _summary(cv_id, args.keep)
 
-    if not os.getenv("OPENAI_API_KEY"):
+    if not os.getenv("OPENAI_API_KEY") and not os.getenv("GEMINI_API_KEY"):
         try:
             from dotenv import load_dotenv
             load_dotenv()
         except ImportError:
             pass
-    if not os.getenv("OPENAI_API_KEY"):
-        record(FAIL, "OPENAI_API_KEY available", "set it in .env or use --no-ai")
+    if not os.getenv("OPENAI_API_KEY") and not os.getenv("GEMINI_API_KEY"):
+        record(FAIL, "AI API key available",
+               "set OPENAI_API_KEY or GEMINI_API_KEY in .env, or use --no-ai")
         return _summary(cv_id, args.keep)
 
     try:

@@ -90,7 +90,7 @@ load_dotenv()
 # Mirror them into os.environ so db.py and the OpenAI calls (os.getenv)
 # work unchanged in both places. Local .env wins when both are set.
 try:
-    for _k in ("OPENAI_API_KEY", "DATABASE_URL",
+    for _k in ("OPENAI_API_KEY", "GEMINI_API_KEY", "DATABASE_URL",
                "DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME"):
         try:
             _v = st.secrets.get(_k)
@@ -265,7 +265,7 @@ def _extract_structured_info(cv_file_id: str, sanitized_text: str) -> AIExtracti
     is what the approved dataclass and the Feature 2 method description
     already specify.
     """
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    client, model = __import__("ai_client").get_client()
 
     prompt = f"""
 Extract professional skills, education, and work experience from this CV/resume.
@@ -300,9 +300,10 @@ CV text:
 \"\"\"{sanitized_text[:3000]}\"\"\"
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
+    response = __import__("ai_client").chat_completion(
+        client,
+        model,
+        [
             {"role": "system", "content": "You are a strict JSON generator. Return valid JSON only."},
             {"role": "user", "content": prompt},
         ],

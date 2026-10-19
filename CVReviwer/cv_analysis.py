@@ -139,12 +139,14 @@ def requestCVAnalysis(
     availableCategories: list[str],
 ) -> CVAnalysisResult:
     try:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        import ai_client
+        client, model = ai_client.get_client()
         prompt = _build_analysis_prompt(cvData, rawText, availableCategories)
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
+        response = ai_client.chat_completion(
+            client,
+            model,
+            [
                 {"role": "system", "content": "You are a strict JSON generator. Return valid JSON only."},
                 {"role": "user", "content": prompt},
             ],
