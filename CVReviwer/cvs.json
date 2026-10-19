@@ -1954,5 +1954,2599 @@
       ],
       "analyzedAt": "2026-08-10T20:03:27.677680+00:00"
     }
+  },
+  {
+    "id": "1922a85504b947fd92f64758c39643e1",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\1922a85504b947fd92f64758c39643e1_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-17T01:41:59.027681+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-17T01:42:07.070783+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.725,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.65,
+      "suggestions": [
+        "Add proficiency levels to skills to enhance completeness.",
+        "Provide specific start dates for work experience to improve clarity.",
+        "Use action verbs consistently in work experience descriptions for better clarity.",
+        "Consider adding more detailed descriptions of responsibilities and achievements in work experience."
+      ],
+      "analyzedAt": "2026-08-17T01:42:09.513981+00:00"
+    }
+  },
+  {
+    "id": "6590c6b6be914479a03d444fa2c7aeaf",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\6590c6b6be914479a03d444fa2c7aeaf_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-08-25T17:46:42.604437+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-08-25T17:46:50.728769+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.705,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Provide proficiency levels for each skill to enhance completeness.",
+        "Add specific dates for work experience to improve clarity.",
+        "Use action verbs and concise descriptions in work experience to enhance clarity."
+      ],
+      "analyzedAt": "2026-08-25T17:56:05.733863+00:00"
+    }
+  },
+  {
+    "id": "fac2358b2a96402c95f4ca21b820daed",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\fac2358b2a96402c95f4ca21b820daed_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-08-25T18:02:50.132395+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-08-25T18:02:57.196952+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-08-25T18:03:43.773729+00:00"
+    }
+  },
+  {
+    "id": "eefd2ef539304f828dc58658ef68a1df",
+    "jobseekerId": "John Doe",
+    "original_filename": "Khomkit_Resume.pdf",
+    "stored_path": "uploads\\eefd2ef539304f828dc58658ef68a1df_Khomkit_Resume.pdf",
+    "size_bytes": 112143,
+    "sha256": "36dacfcf4cddf393abf4e2c6aa721eebd75b21f5e3776b3ce0f03180be94e7ca",
+    "uploaded_at": "2026-08-25T18:03:48.170117+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Docker",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "GitHub",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Next.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prisma",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Krainai Wittayakom Rajamangala Phisek School",
+          "degree": "Science–Mathematics Program",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering (Software Engineering)",
+          "start_year": 2018,
+          "end_year": 2023
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-08-25T18:03:56.257314+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.735,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.75,
+      "suggestions": [],
+      "analyzedAt": "2026-08-25T18:03:58.558334+00:00"
+    }
+  },
+  {
+    "id": "16f9f5f002e448f0b3ace48c4adf75f3",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume.pdf",
+    "stored_path": "uploads\\16f9f5f002e448f0b3ace48c4adf75f3_Resume.pdf",
+    "size_bytes": 136750,
+    "sha256": "3851c0f8aa26c26071cfc59c32d294739bc25c27a2802f1d5192e428410f93d3",
+    "uploaded_at": "2026-09-05T10:53:12.243514+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        },
+        {
+          "institution": "Municipality School 6",
+          "degree": "Secondary School",
+          "start_year": 2017,
+          "end_year": 2022
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Designer",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Designer",
+          "start_date": null,
+          "end_date": "2025"
+        }
+      ],
+      "extracted_at": "2026-09-05T10:53:18.934607+00:00"
+    }
+  },
+  {
+    "id": "41f07cd3dcfe4d398d0342a6c887600c",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\41f07cd3dcfe4d398d0342a6c887600c_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-05T11:27:00.203968+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Java Project",
+          "position": "Front-End Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-05T11:27:06.442516+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-09-05T11:30:59.758868+00:00"
+    }
+  },
+  {
+    "id": "0c2a240cc5aa4d8ea3b52e8f4fa16c7b",
+    "jobseekerId": "John Doe",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\0c2a240cc5aa4d8ea3b52e8f4fa16c7b_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-09-05T11:31:12.508998+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-09-05T11:31:15.287658+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.705,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Provide proficiency levels for each skill to enhance completeness.",
+        "Add specific dates for work experience to improve clarity.",
+        "Improve formatting and readability of the CV to enhance clarity."
+      ],
+      "analyzedAt": "2026-09-05T11:31:17.539847+00:00"
+    }
+  },
+  {
+    "id": "92c402ce29f64eababf49c762cea25f4",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\92c402ce29f64eababf49c762cea25f4_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-07T15:16:42.318969+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Java Project",
+          "position": "Front-End Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-07T15:16:49.424973+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-09-07T15:16:52.463920+00:00"
+    }
+  },
+  {
+    "id": "3fdcf46a6ea846bea14b935c583e7f97",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\3fdcf46a6ea846bea14b935c583e7f97_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-11T10:00:49.420047+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-11T10:00:57.729284+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-09-11T10:06:58.348248+00:00"
+    }
+  },
+  {
+    "id": "ad456afe0b75449e8b141a2108e76c81",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\ad456afe0b75449e8b141a2108e76c81_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-11T10:08:38.232974+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-11T10:08:43.886039+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-09-11T10:08:46.216213+00:00"
+    }
+  },
+  {
+    "id": "3177054336a84728be551eb69c81ecbe",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\3177054336a84728be551eb69c81ecbe_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-24T10:21:57.951358+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-24T10:22:25.493354+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-09-24T10:22:39.680349+00:00"
+    }
+  },
+  {
+    "id": "4542ce2790984c028ae1be630f3d7ce5",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume.pdf",
+    "stored_path": "uploads\\4542ce2790984c028ae1be630f3d7ce5_Resume.pdf",
+    "size_bytes": 136750,
+    "sha256": "3851c0f8aa26c26071cfc59c32d294739bc25c27a2802f1d5192e428410f93d3",
+    "uploaded_at": "2026-09-24T13:26:51.893518+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        },
+        {
+          "institution": "Municipality School 6",
+          "degree": "Secondary School",
+          "start_year": 2017,
+          "end_year": 2022
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Designer",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Designer",
+          "start_date": null,
+          "end_date": "2025"
+        }
+      ],
+      "extracted_at": "2026-09-24T13:27:22.054510+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.735,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.75,
+      "suggestions": [],
+      "analyzedAt": "2026-09-24T13:27:35.777592+00:00"
+    }
+  },
+  {
+    "id": "fbcd01ea8237492fb7154ed5e513f990",
+    "jobseekerId": "John Doe",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\fbcd01ea8237492fb7154ed5e513f990_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-24T13:32:00.163451+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-24T13:32:25.486532+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.725,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.65,
+      "suggestions": [
+        "Add proficiency levels to skills to demonstrate expertise.",
+        "Provide specific start dates for work experience to enhance clarity.",
+        "Improve formatting consistency in the work experience section for better readability.",
+        "Use action verbs and detailed descriptions in work experience entries to enhance clarity."
+      ],
+      "analyzedAt": "2026-09-24T13:32:38.801700+00:00"
+    }
+  },
+  {
+    "id": "a881913b606f40628a991fb3c6ff63cd",
+    "jobseekerId": "2f0b826c-6ccb-4692-bab8-ac412b494ff6",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\a881913b606f40628a991fb3c6ff63cd_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-26T14:49:09.336683+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-26T14:49:46.052915+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.725,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.65,
+      "suggestions": [
+        "Add proficiency levels to skills to enhance completeness.",
+        "Provide specific start dates for work experience to improve clarity.",
+        "Use action verbs consistently in work experience descriptions for better clarity."
+      ],
+      "analyzedAt": "2026-09-26T14:50:41.483960+00:00"
+    }
+  },
+  {
+    "id": "a08f0353de034ca2ab6582db8eef85c2",
+    "jobseekerId": "66264aca-bcb2-4dc4-a08e-dcc2c9e9f86a",
+    "original_filename": "CV.pdf",
+    "stored_path": "uploads\\a08f0353de034ca2ab6582db8eef85c2_CV.pdf",
+    "size_bytes": 1996776,
+    "sha256": "e58f669fe0672d68bb9fa4cd5601e1becca205ecf9ce8df4cf0d288d47ce306a",
+    "uploaded_at": "2026-09-26T19:08:16.485795+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": null,
+          "end_year": null
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-09-26T19:08:35.103819+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.235,
+      "completenessScore": 0.5,
+      "relevanceScore": 0.0,
+      "clarityScore": 0.3,
+      "suggestions": [
+        "Add detailed work experience to demonstrate practical application of skills.",
+        "Include specific skills relevant to the software engineering field.",
+        "Provide start and end years for education to enhance completeness.",
+        "Improve clarity by using consistent formatting and clear action verbs."
+      ],
+      "analyzedAt": "2026-09-26T19:08:50.086842+00:00"
+    }
+  },
+  {
+    "id": "c5aadad5064e4834bf4d0d549d90e9cb",
+    "jobseekerId": "66264aca-bcb2-4dc4-a08e-dcc2c9e9f86a",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\c5aadad5064e4834bf4d0d549d90e9cb_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-09-26T19:09:50.334885+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-09-26T19:09:56.903687+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.705,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Provide proficiency levels for skills to enhance completeness.",
+        "Add specific dates for work experience to improve clarity.",
+        "Improve formatting and readability of the CV for better clarity."
+      ],
+      "analyzedAt": "2026-09-26T19:09:59.505578+00:00"
+    }
+  },
+  {
+    "id": "61262393edd34810843ac7abada77903",
+    "jobseekerId": "75e87120-8a2d-4529-8f69-0c6bd0502d68",
+    "original_filename": "CV-ฝึกงาน.pdf",
+    "stored_path": "uploads\\61262393edd34810843ac7abada77903_CV-ฝ_กงาน.pdf",
+    "size_bytes": 178386,
+    "sha256": "b916e6e403e1fbf5522869d540872664601a1ca26d09803581fc0200d7bbaa60",
+    "uploaded_at": "2026-09-27T17:51:24.440621+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "UX/UI",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "ER Diagram",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Database Schema",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "API Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Frontend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Backend Development",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Supabase",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Payap University",
+          "degree": "Bachelor of Science",
+          "start_year": 2007,
+          "end_year": 2011
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "jobhose",
+          "position": "Intern Software Engineer",
+          "start_date": null,
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-09-27T17:51:38.653380+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.705,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Provide proficiency levels for each skill to enhance completeness.",
+        "Add specific dates for work experience to improve clarity.",
+        "Improve formatting and readability of the CV to enhance clarity."
+      ],
+      "analyzedAt": "2026-09-27T17:51:51.971442+00:00"
+    }
+  },
+  {
+    "id": "fda4d60eb3e64532a7bf24567f7f482f",
+    "jobseekerId": "75e87120-8a2d-4529-8f69-0c6bd0502d68",
+    "original_filename": "frontend_CV_nutchajunthong.pdf",
+    "stored_path": "uploads\\fda4d60eb3e64532a7bf24567f7f482f_frontend_CV_nutchajunthong.pdf",
+    "size_bytes": 38921,
+    "sha256": "50379b22130c3702235ceabd1d92140e0f4e7a9ce309e759926c295e12b74462",
+    "uploaded_at": "2026-09-27T18:06:04.343224+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Github",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "User interface design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prototyping",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Test case",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Automation Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Manual Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Typing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Drawing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Video Editing",
+          "proficiency_level": "beginner"
+        }
+      ],
+      "education": [
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering Program in Software Engineering",
+          "start_year": 2019,
+          "end_year": 2024
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "University of Phayao",
+          "position": "Project management, BMI website",
+          "start_date": "2019-09",
+          "end_date": "2020-10"
+        },
+        {
+          "company": "University of Phayao",
+          "position": "Project management, shoe selling website",
+          "start_date": "2023-06",
+          "end_date": "2024-03"
+        }
+      ],
+      "extracted_at": "2026-09-27T18:06:19.644528+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.725,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.7,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Provide proficiency levels for all skills listed to enhance completeness.",
+        "Improve clarity by using consistent formatting and action verbs in work experience descriptions.",
+        "Add more detailed descriptions of work experience to better highlight achievements and responsibilities."
+      ],
+      "analyzedAt": "2026-09-27T18:07:00.586698+00:00"
+    }
+  },
+  {
+    "id": "303803b0567f4af1952055583656bed6",
+    "jobseekerId": "75e87120-8a2d-4529-8f69-0c6bd0502d68",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\303803b0567f4af1952055583656bed6_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-27T18:07:02.606568+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App",
+          "position": "Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-27T18:07:11.718121+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.785,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.7,
+      "suggestions": [],
+      "analyzedAt": "2026-09-27T18:07:14.448798+00:00"
+    }
+  },
+  {
+    "id": "c3ab1fad1a4b480e911fa6ff23b1b65a",
+    "jobseekerId": "9645acb9-d1e0-43b3-a9e2-641d0b7d75c6",
+    "original_filename": "Khomkit_Resume.pdf",
+    "stored_path": "uploads\\c3ab1fad1a4b480e911fa6ff23b1b65a_Khomkit_Resume.pdf",
+    "size_bytes": 112143,
+    "sha256": "36dacfcf4cddf393abf4e2c6aa721eebd75b21f5e3776b3ce0f03180be94e7ca",
+    "uploaded_at": "2026-09-29T18:21:54.702383+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Docker",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "GitHub",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Next.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prisma",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Krainai Wittayakom Rajamangala Phisek School",
+          "degree": "Science–Mathematics Program",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering (Software Engineering)",
+          "start_year": 2018,
+          "end_year": 2023
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-09-29T18:22:12.514868+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.735,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.75,
+      "suggestions": [],
+      "analyzedAt": "2026-09-29T18:30:56.859877+00:00"
+    }
+  },
+  {
+    "id": "e6221592534f4b5cbf9cbf8ab98acdb6",
+    "jobseekerId": "9645acb9-d1e0-43b3-a9e2-641d0b7d75c6",
+    "original_filename": "Resume (1).pdf",
+    "stored_path": "uploads\\e6221592534f4b5cbf9cbf8ab98acdb6_Resume _1_.pdf",
+    "size_bytes": 138052,
+    "sha256": "a10ac0e30a2f1f1328136ecd206736088b89e8c6eea0e19da695a9418ecbb111",
+    "uploaded_at": "2026-09-29T18:24:33.232098+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "L'Artisan Pastry Bakery",
+          "position": "Web Design",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App Design",
+          "position": null,
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": "Social Ant",
+          "position": "Fake News System",
+          "start_date": null,
+          "end_date": "2025"
+        },
+        {
+          "company": null,
+          "position": "Front-End Project",
+          "start_date": null,
+          "end_date": "2024"
+        },
+        {
+          "company": null,
+          "position": "Java Project",
+          "start_date": null,
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-09-29T18:28:34.763967+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.725,
+      "completenessScore": 0.7,
+      "relevanceScore": 0.8,
+      "clarityScore": 0.65,
+      "suggestions": [
+        "Add proficiency levels to skills to enhance clarity and completeness.",
+        "Provide specific start dates for work experience entries to improve completeness.",
+        "Clarify job titles and responsibilities in work experience for better clarity."
+      ],
+      "analyzedAt": "2026-09-29T18:28:37.108037+00:00"
+    }
+  },
+  {
+    "id": "5ca1ce1ef7264d909727e6a6593e0b3e",
+    "jobseekerId": "9645acb9-d1e0-43b3-a9e2-641d0b7d75c6",
+    "original_filename": "frontend_CV_nutchajunthong.pdf",
+    "stored_path": "uploads\\5ca1ce1ef7264d909727e6a6593e0b3e_frontend_CV_nutchajunthong.pdf",
+    "size_bytes": 38921,
+    "sha256": "50379b22130c3702235ceabd1d92140e0f4e7a9ce309e759926c295e12b74462",
+    "uploaded_at": "2026-09-29T18:30:22.134168+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Github",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "User interface design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prototyping",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Test case",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Automation Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Manual Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Typing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Drawing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Video Editing",
+          "proficiency_level": "beginner"
+        }
+      ],
+      "education": [
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering Program in Software Engineering",
+          "start_year": 2019,
+          "end_year": 2024
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "University of Phayao",
+          "position": "Project management, BMI website",
+          "start_date": "2019-09",
+          "end_date": "2020-10"
+        },
+        {
+          "company": "University of Phayao",
+          "position": "Project management, shoe selling website",
+          "start_date": "2023-06",
+          "end_date": "2024-03"
+        }
+      ],
+      "extracted_at": "2026-09-29T18:30:33.075461+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.738,
+      "completenessScore": 0.8,
+      "relevanceScore": 0.75,
+      "clarityScore": 0.65,
+      "suggestions": [
+        "Provide proficiency levels for all skills to enhance completeness.",
+        "Improve clarity by using consistent formatting and action verbs in work experience descriptions.",
+        "Add more detailed descriptions of work experience to better highlight achievements and responsibilities.",
+        "Consider removing irrelevant skills or providing context for their relevance."
+      ],
+      "analyzedAt": "2026-10-17T12:31:32.876910+00:00"
+    }
+  },
+  {
+    "id": "6b5bc670260d467093cf9251d8cdc00d",
+    "jobseekerId": "bc81056d-2c27-46a8-ac6d-9f105f9988cc",
+    "original_filename": "MyCV.pdf",
+    "stored_path": "uploads\\6b5bc670260d467093cf9251d8cdc00d_MyCV.pdf",
+    "size_bytes": 302000,
+    "sha256": "30cd0c03827d137e321095e2b040e12ea9047479dc894b6c46a36326298db813",
+    "uploaded_at": "2026-10-17T14:13:14.136715+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Jira",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Trello",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Canva",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Visual Studio Code",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "systems analysis",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "data flow diagrams",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "use case design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "UX/UI Design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Front end",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Analytical Thinking",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Empathy",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Communication",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Problem Solving",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": 2025
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Smart Dorm Control",
+          "position": "Business Analyst",
+          "start_date": "2023-2024",
+          "end_date": null
+        },
+        {
+          "company": "Queue Booking System for Medical Technology and Physical Therapy Centers",
+          "position": "Business Analyst",
+          "start_date": "2024-2025",
+          "end_date": null
+        }
+      ],
+      "extracted_at": "2026-10-17T14:13:23.602441+00:00"
+    }
+  },
+  {
+    "id": "8b01482ad021458c9ca383ca84f8f387",
+    "jobseekerId": "bc81056d-2c27-46a8-ac6d-9f105f9988cc",
+    "original_filename": "Khomkit_Resume.pdf",
+    "stored_path": "uploads\\8b01482ad021458c9ca383ca84f8f387_Khomkit_Resume.pdf",
+    "size_bytes": 112143,
+    "sha256": "36dacfcf4cddf393abf4e2c6aa721eebd75b21f5e3776b3ce0f03180be94e7ca",
+    "uploaded_at": "2026-10-17T14:16:09.667114+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Docker",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "GitHub",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Next.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prisma",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Krainai Wittayakom Rajamangala Phisek School",
+          "degree": "Science–Mathematics Program",
+          "start_year": null,
+          "end_year": null
+        },
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering (Software Engineering)",
+          "start_year": 2018,
+          "end_year": 2023
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-10-17T14:16:13.355781+00:00"
+    }
+  },
+  {
+    "id": "459ed20322d1440e90dcdee61f9089e9",
+    "jobseekerId": "bc81056d-2c27-46a8-ac6d-9f105f9988cc",
+    "original_filename": "frontend_CV_nutchajunthong.pdf",
+    "stored_path": "uploads\\459ed20322d1440e90dcdee61f9089e9_frontend_CV_nutchajunthong.pdf",
+    "size_bytes": 38921,
+    "sha256": "50379b22130c3702235ceabd1d92140e0f4e7a9ce309e759926c295e12b74462",
+    "uploaded_at": "2026-10-17T14:17:55.626704+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Github",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "User interface design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prototyping",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Test case",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Automation Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Manual Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Typing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Drawing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Video Editing",
+          "proficiency_level": "beginner"
+        }
+      ],
+      "education": [
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering Program in Software Engineering",
+          "start_year": null,
+          "end_year": 2024
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "BMI website",
+          "position": "Project management",
+          "start_date": "2019-09",
+          "end_date": "2020-10"
+        },
+        {
+          "company": "Shoe selling website",
+          "position": "Project management",
+          "start_date": "2023-06",
+          "end_date": "2024-03"
+        }
+      ],
+      "extracted_at": "2026-10-17T14:18:00.310780+00:00"
+    }
+  },
+  {
+    "id": "424575d154f440b6ac7f69d304f5cd91",
+    "jobseekerId": "bc81056d-2c27-46a8-ac6d-9f105f9988cc",
+    "original_filename": "frontend_CV_nutchajunthong.pdf",
+    "stored_path": "uploads\\424575d154f440b6ac7f69d304f5cd91_frontend_CV_nutchajunthong.pdf",
+    "size_bytes": 38921,
+    "sha256": "50379b22130c3702235ceabd1d92140e0f4e7a9ce309e759926c295e12b74462",
+    "uploaded_at": "2026-10-17T14:20:57.073740+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Git",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Github",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "SQL",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "User interface design",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Prototyping",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Test case",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Automation Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Manual Testing",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Typing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Drawing",
+          "proficiency_level": "intermediate"
+        },
+        {
+          "skill_name": "Video Editing",
+          "proficiency_level": "beginner"
+        }
+      ],
+      "education": [
+        {
+          "institution": "University of Phayao",
+          "degree": "Bachelor of Engineering Program in Software Engineering",
+          "start_year": 2019,
+          "end_year": 2024
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "BMI website",
+          "position": "Project management",
+          "start_date": "2019-09",
+          "end_date": "2020-10"
+        },
+        {
+          "company": "Shoe selling website",
+          "position": "Project management",
+          "start_date": "2023-06",
+          "end_date": "2024-03"
+        }
+      ],
+      "extracted_at": "2026-10-17T14:21:02.086826+00:00"
+    }
+  },
+  {
+    "id": "861eda6b38e0428bb5a0004f68c67d3e",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\861eda6b38e0428bb5a0004f68c67d3e_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T11:28:35.896569+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "abacc9f5f91941f4ac3fe0d1d37a1ea8",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\abacc9f5f91941f4ac3fe0d1d37a1ea8_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T11:35:15.638393+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "318295b6ecd44e8abc9d67aee0df89b8",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\318295b6ecd44e8abc9d67aee0df89b8_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T11:54:57.110959+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "c4dfb40184754ddb99cda09836a18aeb",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\c4dfb40184754ddb99cda09836a18aeb_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T12:07:01.241595+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "8589c43ff30d4f26a235625293b284f1",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\8589c43ff30d4f26a235625293b284f1_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T12:18:01.213464+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "c9eed3df3fa9418eb42406ebd08e83c1",
+    "jobseekerId": "eb5ff5f9-9c55-49f0-9f96-5f59c04f8b7e",
+    "original_filename": "05eb0bcadad84776b6490609f1586c57_CV_Irrelevant.pdf",
+    "stored_path": "uploads\\c9eed3df3fa9418eb42406ebd08e83c1_05eb0bcadad84776b6490609f1586c57_CV_Irrelevant.pdf",
+    "size_bytes": 1714,
+    "sha256": "8a90dc260f0741a30ede604e5559b0592a2d1836e4cd0c3ac9ea6bfdd64446e3",
+    "uploaded_at": "2026-10-19T12:42:52.912167+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "3b8ab36ebf2948ecba4c986e50972c5e",
+    "jobseekerId": "eb5ff5f9-9c55-49f0-9f96-5f59c04f8b7e",
+    "original_filename": "05eb0bcadad84776b6490609f1586c57_CV_Irrelevant.pdf",
+    "stored_path": "uploads\\3b8ab36ebf2948ecba4c986e50972c5e_05eb0bcadad84776b6490609f1586c57_CV_Irrelevant.pdf",
+    "size_bytes": 1714,
+    "sha256": "8a90dc260f0741a30ede604e5559b0592a2d1836e4cd0c3ac9ea6bfdd64446e3",
+    "uploaded_at": "2026-10-19T12:43:27.239206+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "5b59c885051140d998428f399b69f98d",
+    "jobseekerId": "eb5ff5f9-9c55-49f0-9f96-5f59c04f8b7e",
+    "original_filename": "CV.pdf",
+    "stored_path": "uploads\\5b59c885051140d998428f399b69f98d_CV.pdf",
+    "size_bytes": 1996776,
+    "sha256": "e58f669fe0672d68bb9fa4cd5601e1becca205ecf9ce8df4cf0d288d47ce306a",
+    "uploaded_at": "2026-10-19T12:54:54.085984+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [],
+      "education": [
+        {
+          "institution": "College of Arts, Media, and Technology, Chiang Mai University",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": null,
+          "end_year": 2026
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-10-19T12:55:07.868088+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.498,
+      "completenessScore": 0.45,
+      "relevanceScore": 0.5,
+      "clarityScore": 0.55,
+      "suggestions": [
+        "Work Experience is not in the evaluated categories list, scored at 0.0, and should be added with relevant software development experience.",
+        "Skills section is not in the evaluated categories list, scored at 0.0, and should be populated with core technical tools and competencies.",
+        "Complete the Education section by adding the missing start year, GPA, honors, and key coursework relevant to Software Engineering."
+      ],
+      "analyzedAt": "2026-10-19T12:55:26.166832+00:00"
+    }
+  },
+  {
+    "id": "6b085406c9484be7b0fb6c0e4a1978fc",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\6b085406c9484be7b0fb6c0e4a1978fc_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T13:02:35.266045+00:00",
+    "validation_status": "validated"
+  },
+  {
+    "id": "f3e9b452ccff43779ff1de3a8ab8b83b",
+    "jobseekerId": "eb5ff5f9-9c55-49f0-9f96-5f59c04f8b7e",
+    "original_filename": "CV_test.pdf",
+    "stored_path": "uploads\\f3e9b452ccff43779ff1de3a8ab8b83b_CV_test.pdf",
+    "size_bytes": 1996776,
+    "sha256": "e58f669fe0672d68bb9fa4cd5601e1becca205ecf9ce8df4cf0d288d47ce306a",
+    "uploaded_at": "2026-10-19T13:05:38.395103+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": null,
+          "end_year": 2026
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-10-19T13:05:45.467887+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.175,
+      "completenessScore": 0.2,
+      "relevanceScore": 0.1,
+      "clarityScore": 0.2,
+      "suggestions": [
+        "The provided text is a project proposal document, not a CV; please replace this with a professional resume containing a summary, skills, and work experience.",
+        "Add a 'Skills' section to highlight technical proficiencies relevant to Software Engineering, such as programming languages, frameworks, and tools.",
+        "Add a 'Work Experience' section (missing) to detail internships, projects, or professional roles with specific achievements.",
+        "Include a start date for your education to provide a complete academic timeline."
+      ],
+      "analyzedAt": "2026-10-19T13:05:50.102193+00:00"
+    }
+  },
+  {
+    "id": "46bfcd1453ee4ecd97656bbc0a78df3e",
+    "jobseekerId": "eb5ff5f9-9c55-49f0-9f96-5f59c04f8b7e",
+    "original_filename": "CV_gemini.pdf",
+    "stored_path": "uploads\\46bfcd1453ee4ecd97656bbc0a78df3e_CV_gemini.pdf",
+    "size_bytes": 1996776,
+    "sha256": "e58f669fe0672d68bb9fa4cd5601e1becca205ecf9ce8df4cf0d288d47ce306a",
+    "uploaded_at": "2026-10-19T13:07:19.647491+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [],
+      "education": [
+        {
+          "institution": "Chiang Mai University",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": null,
+          "end_year": 2026
+        }
+      ],
+      "work_experience": [],
+      "extracted_at": "2026-10-19T13:07:30.907837+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.175,
+      "completenessScore": 0.2,
+      "relevanceScore": 0.1,
+      "clarityScore": 0.2,
+      "suggestions": [
+        "The provided text is a project proposal document, not a CV; please replace this with a professional resume containing a summary, skills, and work experience.",
+        "Add a 'Skills' section to highlight technical proficiencies relevant to Software Engineering, such as programming languages, frameworks, and tools.",
+        "Add a 'Work Experience' section (missing) to detail internships, projects, or professional roles with specific achievements.",
+        "Include a start date for your education to provide a complete academic timeline."
+      ],
+      "analyzedAt": "2026-10-19T13:07:35.602776+00:00"
+    }
+  },
+  {
+    "id": "087c05c5456846e0a68bae71ede66517",
+    "jobseekerId": "19b9ba6d-1acd-4770-9f1a-e6b81d92a867",
+    "original_filename": "Resume_Ratthasas.pdf",
+    "stored_path": "uploads\\087c05c5456846e0a68bae71ede66517_Resume_Ratthasas.pdf",
+    "size_bytes": 166813,
+    "sha256": "a3a723bca0ac2ed97b66e0920b88529223d99d5b0e304e50c1879b4a32182024",
+    "uploaded_at": "2026-10-19T13:13:27.263139+00:00",
+    "validation_status": "validated",
+    "extracted_data": {
+      "skills": [
+        {
+          "skill_name": "Figma",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "HTML",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Tailwind CSS",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Bootstrap",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Vue.js",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Java",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "JavaScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "TypeScript",
+          "proficiency_level": null
+        },
+        {
+          "skill_name": "Python",
+          "proficiency_level": null
+        }
+      ],
+      "education": [
+        {
+          "institution": "Chiang Mai University, College of Arts, Media and Technology",
+          "degree": "Bachelor of Science in Software Engineering",
+          "start_year": 2023,
+          "end_year": null
+        }
+      ],
+      "work_experience": [
+        {
+          "company": "Social Ant Fake News System",
+          "position": "Front-End Developer",
+          "start_date": "2025",
+          "end_date": "2025"
+        },
+        {
+          "company": "L'Artisan Pastry Bakery Web Design",
+          "position": "UX/UI Designer",
+          "start_date": "2025",
+          "end_date": "2025"
+        },
+        {
+          "company": "Guide Calling App Design",
+          "position": "UX/UI Designer",
+          "start_date": "2025",
+          "end_date": "2025"
+        },
+        {
+          "company": "CVision",
+          "position": "Software Developer",
+          "start_date": "2026",
+          "end_date": "2026"
+        },
+        {
+          "company": "Kindred AI",
+          "position": "Software Developer",
+          "start_date": "2026",
+          "end_date": "2026"
+        },
+        {
+          "company": "Space-Themed 2D Shooter Game",
+          "position": "Game Developer",
+          "start_date": "2024",
+          "end_date": "2024"
+        }
+      ],
+      "extracted_at": "2026-10-19T13:13:57.477723+00:00"
+    },
+    "analysis": {
+      "overallScore": 0.708,
+      "completenessScore": 0.65,
+      "relevanceScore": 0.85,
+      "clarityScore": 0.6,
+      "suggestions": [
+        "Add proficiency levels to your skills list to provide better context for your technical expertise.",
+        "Expand work experience entries by including specific bullet points detailing your contributions, challenges faced, and measurable outcomes for each role.",
+        "Standardize the formatting of your work experience section to ensure dates, company names, and job titles are clearly and consistently presented.",
+        "Include a 'Projects' section to separate academic or personal projects from professional work experience to improve clarity."
+      ],
+      "analyzedAt": "2026-10-19T13:14:29.348011+00:00"
+    }
   }
 ]

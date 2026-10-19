@@ -738,9 +738,14 @@ class TestCVOwnership(FeatureTwoTestCase):
     def test_ut_2_14_002_unknown_jobseeker_has_none(self):
         self.assertEqual(cv_data_adapter.list_cv_ids_for("Someone Else"), [])
 
-    def test_ut_2_14_003_missing_arguments_return_false(self):
-        self.assertFalse(cv_data_adapter.record_cv_ownership("", "cv-1"))
-        self.assertFalse(cv_data_adapter.record_cv_ownership("John Doe", ""))
+    def test_ut_2_14_003_missing_arguments_raise(self):
+        # Feature 5 owns ownership now (UT-5-21): missing identifiers raise
+        # DatabaseException instead of returning False. Upload-path
+        # survivability moved up to app.process_cv, which contains it.
+        with self.assertRaises(cv_data_adapter.DatabaseException):
+            cv_data_adapter.record_cv_ownership("", "cv-1")
+        with self.assertRaises(cv_data_adapter.DatabaseException):
+            cv_data_adapter.record_cv_ownership("John Doe", "")
 
     def test_ut_2_14_004_deleted_cv_disappears_from_the_picker(self):
         write_cv_registry(self.registry, [cv_record()])
@@ -748,9 +753,12 @@ class TestCVOwnership(FeatureTwoTestCase):
         write_cv_registry(self.registry, [])   # CV removed from Feature 3's store
         self.assertEqual(cv_data_adapter.list_cv_ids_for("John Doe"), [])
 
-    def test_ut_2_14_005_database_failure_is_survivable(self):
+    def test_ut_2_14_005_database_failure_raises(self):
+        # Feature 5 owns ownership now (UT-5-21): a rejected write raises
+        # DatabaseException. app.process_cv catches it so uploads survive.
         self.db.fail_on = "INSERT INTO jobseeker_cv"
-        self.assertFalse(cv_data_adapter.record_cv_ownership("John Doe", "cv-1", "cv.pdf"))
+        with self.assertRaises(cv_data_adapter.DatabaseException):
+            cv_data_adapter.record_cv_ownership("John Doe", "cv-1", "cv.pdf")
 
 
 if __name__ == "__main__":

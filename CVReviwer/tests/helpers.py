@@ -30,6 +30,22 @@ class MockFile:
         return self._data
 
 
+def _stamp_pdf_a(data: bytes) -> bytes:
+    """Add the PDF/A identification marker (XMP pdfaid) to a valid PDF.
+
+    validateCVFile requires the marker, so every "valid" fixture goes
+    through here; negative-format fixtures (plain PDF) must skip it.
+    """
+    pdf = pikepdf.open(io.BytesIO(data))
+    with pdf.open_metadata() as meta:
+        meta["pdfaid:part"] = "1"
+        meta["pdfaid:conformance"] = "B"
+    out = io.BytesIO()
+    pdf.save(out)
+    pdf.close()
+    return out.getvalue()
+
+
 def make_valid_pdf() -> bytes:
     buf = io.BytesIO()
     pdf = pikepdf.Pdf.new()
@@ -37,11 +53,11 @@ def make_valid_pdf() -> bytes:
     pdf.save(buf)
     data = buf.getvalue()
     pdf.close()
-    return data
+    return _stamp_pdf_a(data)
 
 
-def make_pdf_with_text(text: str) -> bytes:
-    """Create a PDF with actual text content extractable by PyPDF2."""
+def _build_text_pdf(text: str) -> bytes:
+    """Create a plain (non PDF/A) PDF with extractable text."""
     text_bytes = text.encode("latin-1", "replace")
     stream_data = (
         b"BT /F1 12 Tf 100 700 Td "
@@ -75,13 +91,31 @@ def make_pdf_with_text(text: str) -> bytes:
     return b"%PDF-1.4\n" + body + b"\nxref\n0 " + str(len(objs) + 1).encode() + b"\n" + b"".join(xref_entries) + trailer
 
 
+def make_pdf_with_text(text: str) -> bytes:
+    """Create a PDF/A-marked PDF with actual text content extractable by PyPDF2."""
+    return _stamp_pdf_a(_build_text_pdf(text))
+
+
+def make_plain_text_pdf(text: str) -> bytes:
+    """Standard PDF (valid structure, no PDF/A marker) — for negative format tests."""
+    return _build_text_pdf(text)
+
+
 def make_large_pdf(size_bytes: int) -> bytes:
+    """A valid PDF/A whose file size is exactly size_bytes.
+
+    Padding is a PDF comment appended after %%EOF: parsers ignore trailing
+    data and object offsets/xref stay intact, so startxref validation and
+    pikepdf open both succeed at any padded size.
+    """
     base = make_valid_pdf()
     if len(base) >= size_bytes:
         return base[:size_bytes]
-    repeat = (size_bytes // len(base)) + 1
-    data = (base * repeat)[:size_bytes]
-    data = b"%PDF-" + data[5:]
+    pad_len = size_bytes - len(base) - 2  # '%' + '\n'
+    data = base + b"%" + b"#" * pad_len + b"\n"
+    diff = size_bytes - len(data)
+    if diff:
+        data = base + b"%" + b"#" * (pad_len + diff) + b"\n"
     return data
 
 

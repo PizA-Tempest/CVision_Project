@@ -1,0 +1,205 @@
+[
+  {
+    "test_id": "STC-03-001-TC-01",
+    "result": "PASS",
+    "actual": "process_cv accepted CV_2026.pdf -> cv_file_id=f205e31e, record validated, extracted skills stored, page renders 'Selected file' card + 'Upload successful' notification",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-001-TC-02",
+    "result": "PASS",
+    "actual": "st.file_uploader('Upload your CV (PDF)') accepts browse and drag-and-drop; help text documents drag-and-drop; both land on the same 'if uploaded_file:' -> process_cv() path (no separate branch)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-001-TC-03",
+    "result": "PASS",
+    "actual": "CV_20MB.pdf (20971520 bytes) accepted, stored, processed; cv_file_id=51599e39, extracted data present",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-001-TC-04",
+    "result": "PASS",
+    "actual": "isMasked=True; masked_email=t***@gmail.com, masked_phone=--4567, masked_address='*** Rim', masked_id=*********0123; verify passed; PII literals leaked to AI text: none; masked fields reported=['ID number', 'address', 'email', 'phone']",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-001-TC-05",
+    "result": "PASS",
+    "actual": "cvs.json extracted_data holds skills/education/work entries; displayExtractedCVInfo + render_extracted_info draw Python/Advanced, Chiang Mai University, ABC Company (skills=2, education=1, work=1)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-001-TC-06",
+    "result": "PASS",
+    "actual": "end_date 'Present' stored and displayed without error (stored end_date='Present'; drawn=True)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-002-TC-01",
+    "result": "PASS",
+    "actual": "CV_SkillsOnly.pdf: stored sections={'skills': 3, 'education': 0, 'work_experience': 0}; drawn sections={'skills': True, 'education': False, 'work_experience': False}; no error shown",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-002-TC-02",
+    "result": "PASS",
+    "actual": "CV_NoWork.pdf: stored sections={'skills': 2, 'education': 1, 'work_experience': 0}; drawn sections={'skills': True, 'education': True, 'work_experience': False}; no error shown",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-002-TC-03",
+    "result": "PASS",
+    "actual": "CV_WorkOnly.pdf: stored sections={'skills': 0, 'education': 0, 'work_experience': 2}; drawn sections={'skills': False, 'education': False, 'work_experience': True}; no error shown",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-003-TC-01",
+    "result": "PASS",
+    "actual": "CV_NoSensitive.pdf: detectSensitiveInfo found nothing; masking skipped (masked_fields=[]); extraction stored and summary displayed (cv_file_id=a4673e5f)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-003-TC-02",
+    "result": "PASS",
+    "actual": "CV_YearsOnly.pdf: detectSensitiveInfo found nothing; masking skipped (masked_fields=[]); extraction stored and summary displayed (cv_file_id=f08c5f52)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-003-TC-02-evidence",
+    "result": "PASS",
+    "actual": "'2022-2025' and 'GPA 3.75' not matched as phone/ID (phone=None, id=None)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-004-TC-01",
+    "result": "PASS",
+    "actual": "CV.docx: rejected with message 'Unsupported file format. Please upload a PDF file.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-004-TC-02",
+    "result": "PASS",
+    "actual": "Photo.jpg: rejected with message 'Unsupported file format. Please upload a PDF file.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-004-TC-03",
+    "result": "PASS",
+    "actual": "CV_Plain.pdf (standard PDF 1.4, not PDF/A) accepted and stored (cv_file_id=330b6901)",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-004-TC-04",
+    "result": "PASS",
+    "actual": "CV_Fake.pdf (docx bytes, .pdf name): magic-byte check caught the mismatch; rejected with 'File is corrupted or unreadable. Please upload a valid CV file.'; file not stored",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-005-TC-01",
+    "result": "PASS",
+    "actual": "CV_20MB_plus1.pdf (20971521 bytes): rejected with 'File size limit exceeded. Maximum size is 20 MB.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-005-TC-02",
+    "result": "PASS",
+    "actual": "CV_50MB.pdf (52428800 bytes): rejected with 'File size limit exceeded. Maximum size is 20 MB.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-006-TC-01",
+    "result": "PASS",
+    "actual": "CV_Truncated.pdf: rejected with 'File is corrupted or unreadable. Please upload a valid CV file.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-006-TC-02",
+    "result": "PASS",
+    "actual": "CV_Empty.pdf: rejected with 'File is corrupted or unreadable. Please upload a valid CV file.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-006-TC-03",
+    "result": "PASS",
+    "actual": "CV_BadHeader.pdf: rejected with 'File is corrupted or unreadable. Please upload a valid CV file.'; stored=False",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-007-TC-01",
+    "result": "PASS",
+    "actual": "CV_Irrelevant.pdf: AI returned 0 categories; NoExtractionResultException -> 'CV could not be processed — please upload a clearer or properly formatted CV'; no extracted data stored; returns to upload step",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-007-TC-02",
+    "result": "PASS",
+    "actual": "CV_ImageOnly.pdf: no text layer detected before AI call (AI calls=0); rejected with 'CV could not be processed — please upload a clearer or properly formatted CV'; no extracted data stored",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-008-TC-01",
+    "result": "PASS",
+    "actual": "CV_BadEmail.pdf: mask step returned unmasked text (simulated External AI protection failure); verifySensitiveDataProtection raised; system stopped with 'CV processing could not be completed securely'; no extracted data stored",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-008-TC-02",
+    "result": "PASS",
+    "actual": "CV_BadID.pdf: mask step returned unmasked text (simulated External AI protection failure); verifySensitiveDataProtection raised; system stopped with 'CV processing could not be completed securely'; no extracted data stored",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-008-TC-03",
+    "result": "PASS",
+    "actual": "CV_MultiAddress.pdf: mask step returned unmasked text (simulated External AI protection failure); verifySensitiveDataProtection raised; system stopped with 'CV processing could not be completed securely'; no extracted data stored",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-008-detection-evidence",
+    "result": "PASS",
+    "actual": "real regex detection: bad-email CV -> email='morgan [at] example [dot] com'; bad-ID CV -> id='AB-12*34'; multi-line address -> address='123 Mae Rim Road'",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-009-TC-01",
+    "result": "PASS",
+    "actual": "AI service down: real AI client raised ConnectionError; system responded with 'The analysis service is temporarily unavailable — please try again later'; communication failure recorded via error path",
+    "tester": "auto",
+    "date": "2026-10-17"
+  },
+  {
+    "test_id": "STC-03-009-TC-02",
+    "result": "PASS",
+    "actual": "AI service timeout: real AI client raised TimeoutError; system responded with 'The analysis service is temporarily unavailable — please try again later'; communication failure recorded via error path",
+    "tester": "auto",
+    "date": "2026-10-17"
+  }
+]
