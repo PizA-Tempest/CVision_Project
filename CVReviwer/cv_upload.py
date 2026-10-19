@@ -194,6 +194,29 @@ def _check_pdf_magic(data: bytes) -> CVValidationResult | None:
     return None
 
 
+def _check_startxref(data: bytes) -> bool:
+    """Whether the file's startxref pointer resolves to a plausible xref.
+
+    Truncated files often still carry a valid %PDF- header, and qpdf's
+    auto-recovery will happily reconstruct a cross-reference table for
+    them — so a missing or out-of-range startxref is the reliable signal
+    that the file was cut off before its trailer was written.
+    """
+    idx = data.rfind(b"startxref")
+    if idx == -1:
+        return False
+    m = re.match(br"startxref\s+(\d+)", data[idx:idx + 64])
+    if not m:
+        return False
+    offset = int(m.group(1))
+    if offset <= 0 or offset >= len(data):
+        return False
+    # The target is either a classic "xref" table or a cross-reference
+    # stream object, whose serialization begins with "<number> <number> obj".
+    target = data[offset:offset + 16].lstrip()
+    return target.startswith(b"xref") or bool(target[:1].isdigit())
+
+
 def _verify_pdf_integrity(data: bytes) -> CVValidationResult | None:
     corrupted = CVValidationResult(
         ok=False,
@@ -203,6 +226,9 @@ def _verify_pdf_integrity(data: bytes) -> CVValidationResult | None:
             "Please upload a valid PDF CV."
         ),
     )
+
+    if not _check_startxref(data):
+        return corrupted
 
     try:
         with pikepdf.open(io.BytesIO(data)) as pdf:
@@ -393,7 +419,7 @@ def handleUploadError(exception: Exception) -> str:
         User-facing error message string
     """
     error_messages = {
-        "InvalidFileFormatException": "Unsupported file format. Please upload a PDF/A file.",
+        "InvalidFileFormatException": "Unsupported file format. Please upload a PDF file.",
         "FileSizeExceededException": "File size limit exceeded. Maximum size is 20 MB.",
         "CorruptedFileException": "File is corrupted or unreadable. Please upload a valid CV file.",
         "StorageException": "Could not store the CV file. Please try again.",
@@ -412,7 +438,7 @@ def validateCVFile(file: Any) -> None:
         file: The uploaded CV file
         
     Throws:
-        InvalidFileFormatException: if not PDF/A format
+        InvalidFileFormatException: if not a PDF file
         FileSizeExceededException: if exceeds 20 MB
         CorruptedFileException: if corrupted or unreadable
     """
@@ -437,6 +463,8 @@ def validateCVFile(file: Any) -> None:
         raise CorruptedFileException("File is corrupted or unreadable")
     
     # Verify PDF integrity
+    if not _check_startxref(data):
+        raise CorruptedFileException("File is corrupted or unreadable")
     try:
         with pikepdf.open(io.BytesIO(data)) as pdf:
             if pdf.is_encrypted or len(pdf.pages) == 0:

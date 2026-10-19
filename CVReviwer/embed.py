@@ -42,9 +42,11 @@ class UnprotectedTransmissionException(CVUploadException):
 # Regex patterns for sensitive information detection
 SENSITIVE_PATTERNS = {
     "email": r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}",
-    "phone": r"(\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})",
-    "address": r"\d+\s+[a-zA-Z\s]+(?:street|st|avenue|ave|road|rd|drive|dr|boulevard|blvd|lane|ln)",
+    "email_obfuscated": r"[a-zA-Z0-9._%+-]+\s*\[\s*at\s*\]\s*[a-zA-Z0-9.-]+\s*\[\s*dot\s*\]\s*[a-zA-Z]{2,}",
+    "phone": r"(?:(\+\d{1,3}[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})|(\+\d{1,3}[-.\s]?)?([0-9]{1,2})[-.\s]([0-9]{2,4})[-.\s]([0-9]{4}))",
+    "address": r"\d+\s+[a-zA-Z\s]+?\b(?:street|st|avenue|ave|road|rd|drive|dr|boulevard|blvd|lane|ln)\b",
     "identification": r"\b\d{10,13}\b",
+    "identification_labeled": r"(?i)\b(?:identification\s+number|id\s+number|id)\s*[:#]?\s+([A-Za-z0-9][A-Za-z0-9\-*]{3,})",
 }
 
 
@@ -117,25 +119,34 @@ def detectSensitiveInfo(rawCVText: str) -> SensitiveInfoResult:
     """
     result = SensitiveInfoResult()
 
-    # Detect emails
+    # Detect emails (standard form first, then the obfuscated [at]/[dot] form)
     emails = re.findall(SENSITIVE_PATTERNS["email"], rawCVText)
     if emails:
         result.emailOriginal = emails[0]
+    else:
+        obfuscated = re.search(SENSITIVE_PATTERNS["email_obfuscated"], rawCVText)
+        if obfuscated:
+            result.emailOriginal = obfuscated.group(0)
 
-    # Detect phone numbers
-    phones = re.findall(SENSITIVE_PATTERNS["phone"], rawCVText)
-    if phones:
-        result.phoneOriginal = phones[0][0] if phones[0] else None
+    # Detect phone numbers (full match, not a capture group)
+    phone_match = re.search(SENSITIVE_PATTERNS["phone"], rawCVText)
+    if phone_match:
+        result.phoneOriginal = phone_match.group(0)
 
     # Detect addresses
     addresses = re.findall(SENSITIVE_PATTERNS["address"], rawCVText, re.IGNORECASE)
     if addresses:
         result.addressOriginal = addresses[0]
 
-    # Detect identification numbers
+    # Detect identification numbers (10-13 digits, or the value after an
+    # "ID:"/"Identification Number:" label when the format is non-numeric)
     ids = re.findall(SENSITIVE_PATTERNS["identification"], rawCVText)
     if ids:
         result.identificationOriginal = ids[0]
+    else:
+        labeled = re.search(SENSITIVE_PATTERNS["identification_labeled"], rawCVText)
+        if labeled:
+            result.identificationOriginal = labeled.group(1)
 
     return result
 
@@ -291,6 +302,8 @@ def handleProtectionError(exception: Exception) -> str:
         "SensitiveDataProtectionException": "CV processing could not be completed securely",
         "UnprotectedTransmissionException": "CV processing could not be completed securely — unprotected data detected",
         "AIServiceUnavailableException": "The analysis service is temporarily unavailable — please try again later",
+        "NoExtractionResultException": "CV could not be processed — please upload a clearer or properly formatted CV",
+        "ExtractionPreparationException": "CV could not be processed — please upload a clearer or properly formatted CV",
     }
 
     exception_type = type(exception).__name__

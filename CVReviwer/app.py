@@ -84,7 +84,9 @@ import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv()
+from pathlib import Path as _Path
+
+load_dotenv(_Path(__file__).resolve().parent / ".env")
 
 # Streamlit Community Cloud has no .env — secrets arrive as st.secrets.
 # Mirror them into os.environ so db.py and the OpenAI calls (os.getenv)
@@ -265,7 +267,8 @@ def _extract_structured_info(cv_file_id: str, sanitized_text: str) -> AIExtracti
     is what the approved dataclass and the Feature 2 method description
     already specify.
     """
-    client, model = __import__("ai_client").get_client()
+    import ai_client
+    client, model = ai_client.get_client()
 
     prompt = f"""
 Extract professional skills, education, and work experience from this CV/resume.
@@ -300,7 +303,7 @@ CV text:
 \"\"\"{sanitized_text[:3000]}\"\"\"
 """
 
-    response = __import__("ai_client").chat_completion(
+    response = ai_client.chat_completion(
         client,
         model,
         [
@@ -308,7 +311,7 @@ CV text:
             {"role": "user", "content": prompt},
         ],
         temperature=0,
-        max_tokens=1000,
+        max_tokens=4096,
     )
 
     data = json.loads(_clean_json(response.choices[0].message.content or ""))
@@ -382,6 +385,8 @@ def process_cv(uploaded_file, jobseeker_id=None):
     try:
         result = _extract_structured_info(cv_file_id, masked.sanitizedText)
     except Exception as ex:
+        import traceback
+        traceback.print_exc()
         raise embed.AIServiceUnavailableException(
             f"AI Service unavailable: {ex}"
         ) from ex
@@ -1534,10 +1539,13 @@ if uploaded_file:
                     message = cv_upload.handleUploadError(ex)
                 else:
                     message = embed.handleProtectionError(ex)
+                    detail = getattr(ex, "args", None)
+                    if detail:
+                        message = f"{message} ({detail[0]})"
                 st.error(f"❌ {message}")
                 st.stop()
             except Exception as ex:
-                st.error(f"❌ {embed.handleProtectionError(ex)}")
+                st.error(f"❌ {embed.handleProtectionError(ex)} — {ex}")
                 st.stop()
 
     # SRS-050 / M-02-41. Shown while the upload is the CV in use, not only on

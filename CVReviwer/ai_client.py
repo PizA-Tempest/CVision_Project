@@ -63,20 +63,66 @@ def get_async_client():
     )
 
 
+def _is_truncated(response) -> bool:
+    """True when the model ran out of tokens before finishing the answer."""
+    if not response.choices:
+        return True
+    choice = response.choices[0]
+    if choice.finish_reason in ("length", "max_tokens"):
+        return True
+    content = (choice.message.content or "").strip() if choice.message else ""
+    if not content:
+        return True
+    # Heuristic: a JSON answer cut mid-object (unbalanced braces).
+    if content.count("{") != content.count("}") or content.count("[") != content.count("]"):
+        return True
+    return False
+
+
 def chat_completion(client, model: str, messages: list, **extra):
     """
     One chat call. If the primary is OpenAI and it fails with auth/rate-limit
     and a GEMINI_API_KEY is present, retries once on Gemini (free).
+
+    Retries once with a larger token budget when the answer comes back
+    truncated or empty (Gemini can also return content=None when reasoning
+    consumes the whole budget).
     """
     try:
-        return client.chat.completions.create(
+        extra = dict(extra)
+        budget = int(extra.get("max_tokens") or 1000)
+        response = client.chat.completions.create(
             model=model, messages=messages, **extra
         )
+        if not _is_truncated(response):
+            return response
+        # Truncated / empty — retry once with a larger budget.
+        extra["max_tokens"] = max(budget * 4, 4096)
+        response = client.chat.completions.create(
+            model=model, messages=messages, **extra
+        )
+        if _is_truncated(response):
+            raise RuntimeError(
+                f"{model} returned an empty or truncated response — check the AI key / model."
+            )
+        return response
     except Exception as primary_err:
         # Only fall back when OpenAI was the primary and Gemini is configured
         if model != OPENAI_MODEL or not os.getenv("GEMINI_API_KEY"):
             raise
         fallback = OpenAI(**_gemini_kwargs())
-        return fallback.chat.completions.create(
+        extra = dict(extra)
+        budget = int(extra.get("max_tokens") or 1000)
+        response = fallback.chat.completions.create(
             model=GEMINI_MODEL, messages=messages, **extra
         )
+        if _is_truncated(response):
+            extra["max_tokens"] = max(budget * 4, 4096)
+            response = fallback.chat.completions.create(
+                model=GEMINI_MODEL, messages=messages, **extra
+            )
+        if _is_truncated(response):
+            raise RuntimeError(
+                f"{GEMINI_MODEL} returned an empty or truncated response — check GEMINI_API_KEY."
+            ) from primary_err
+        return response

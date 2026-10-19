@@ -18,7 +18,9 @@ from cv_upload import (
     _save_cvs,
 )
 
-load_dotenv()
+from pathlib import Path as _Path
+
+load_dotenv(_Path(__file__).resolve().parent / ".env")
 
 
 class CVDataCorruptedException(CVUploadException):
@@ -151,7 +153,7 @@ def requestCVAnalysis(
                 {"role": "user", "content": prompt},
             ],
             temperature=0,
-            max_tokens=1000,
+            max_tokens=4096,
         )
 
         content = response.choices[0].message.content or ""

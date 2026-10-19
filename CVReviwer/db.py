@@ -53,7 +53,8 @@ from psycopg2.extras import RealDictCursor
 # and python-dotenv never overrides variables that are already set.
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    from pathlib import Path as _Path
+    load_dotenv(_Path(__file__).resolve().parent / ".env")
 except ImportError:
     pass
 
